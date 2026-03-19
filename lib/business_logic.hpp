@@ -2,20 +2,21 @@
 
 #include <cpr/cpr.h>
 
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-/*
-найти маршруты из СПб в город и обратно
-с максимум 1 пересадкой
-на заданную дату
-*/
+using json = nlohmann::json;
 
+struct Route {};
 
 struct RouteRequest {
+ public:
+  RouteRequest() {}
   RouteRequest(std::vector<std::string>);
 
+ private:
   std::string from_;
   std::string to_;
   std::string date_;
@@ -23,46 +24,23 @@ struct RouteRequest {
   std::string limit_;
 };
 
-// struct Route {
-//   // std::string from_;
-//   // std::string to_;
-//   // std::string date_;
-// };
-
 struct IRouteRepository {
-  virtual void GetRoute() = 0;
-  virtual ~IRouteRepository();
-};
-
-struct IYandexRepository : IRouteRepository {
- 
-  void GetRoute();
-
-  void VisitAPI();
-
-  private:
-  int a;
-};
-
-struct CacheRepository {
-  void GetRoute();
- public:
-  
- private:
-  IYandexRepository api_repo_;
+  virtual std::vector<Route> GetRoute(const RouteRequest& request) = 0;
+  virtual ~IRouteRepository() = default;
 };
 
 struct RouteRespone {};
 
 struct DataRequester {
-  DataRequester(const RouteRequest& request);
+  DataRequester() {}
 
-  void ProcessRequest() {
-    
+  std::vector<Route> ProcessRequest(RouteRequest request) {
+    repo_->GetRoute(request);
+    std::vector<Route> temp;
+    return temp;
   }
 
  private:
-  const RouteRequest& request_;
   IRouteRepository* repo_;
 };
 
