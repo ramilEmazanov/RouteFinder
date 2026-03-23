@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.23)
 
 project(
     labwork7
@@ -7,13 +7,15 @@ project(
 
 set(CMAKE_CXX_STANDARD 23)
 
-include_directories(${CMAKE_SOURCE_DIR}/lib)
+# include_directories(${CMAKE_SOURCE_DIR}/lib)
+add_subdirectory(lib)
 
-file(GLOB LIB_SOURCES "lib/**/*.cpp")
+# file(GLOB LIB_SOURCES "lib/**/*.cpp")
 
-add_executable(labwork7 main.cpp ${LIB_SOURCES})
+add_executable(labwork7 main.cpp)
 
 include(FetchContent)
+
 FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
                          GIT_TAG c492b4fed1fd7288eacec6fe8d89e37df78d373a)
 FetchContent_MakeAvailable(cpr)
@@ -23,4 +25,9 @@ FetchContent_MakeAvailable(json)
 
 target_link_libraries(labwork7 PRIVATE 
     nlohmann_json::nlohmann_json
-    cpr::cpr)
+    cpr::cpr
+    business_logic
+    cache_repo
+    repos
+    stations_parser
+)
