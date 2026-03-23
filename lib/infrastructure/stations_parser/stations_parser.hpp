@@ -3,8 +3,14 @@
 #include <cpr/cpr.h>
 
 #include <nlohmann/json.hpp>
-
+#include <chrono>
+#include <iostream>
 using json = nlohmann::json;
+
+// Основной сервис для управления словарем городов 
+struct MainStationsDictService {
+  void MakeStationsDict();
+};
 
 // Только вытаскивает сырой JSON
 struct RawStationsJsonRequester {
@@ -12,11 +18,11 @@ struct RawStationsJsonRequester {
 };
 
 // Запишет этот JSON в память
-struct CleanJsonWriter {
-  void WriteStationsJson(const json& data);
+struct CleanJsonStationsDictWriter {
+  void WriteCleanStationsDict(const json& data);
 };
 
 // Он уже будет создавать JSON нужного нам формата
-struct StationsMapMaker {
-  void BuildStationsMap();
+struct StationsDictMaker {
+  json BuildStationsDict(const json& data);
 };

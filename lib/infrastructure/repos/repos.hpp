@@ -15,7 +15,6 @@
 struct YandexRepository : IRouteRepository {
  public:
   std::vector<Route> GetRoute(const RouteRequest& request) override;
-  void Print();
  private:
 };
 
