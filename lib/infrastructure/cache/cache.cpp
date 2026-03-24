@@ -14,7 +14,7 @@ std::optional<std::vector<Route>> Cache::TryExtract(
 }
 
 void Cache::WriteToCache(const RouteRequest& request,
-                         const std::vector<Route>& route) {
+                         const std::optional<std::vector<Route>>& route) {
   // Открываем файл с текущим кэшом, записываем в JSON
   // Преобразовываем в JSON
   // Перезаписываем в файл

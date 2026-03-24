@@ -5,12 +5,24 @@
 // получает JSON
 // парсит JSON
 // превращает в vector<Route>
-std::vector<Route> YandexRepository::GetRoute(const RouteRequest& request) {
+std::optional<std::vector<Route>> YandexRepository::GetRoute(
+    const RouteRequest& request) {
   std::string url = "https://api.rasp.yandex.net/v3.0/search/";
-  cpr::Response response = cpr::Get(cpr::Url{url});
+
+  cpr::Response response = cpr::Get(
+      cpr::Url{url},
+      cpr::Parameters{{"apikey", "e8083d0b-419e-4c46-b6b2-e5933f3bcc4d"},
+                      {"from", request.departure_city_},
+                      {"to", request.arrival_city_},
+                      {"format", "json"},
+                      {"lang", "ru_RU"},
+                      {"transfers", request.has_transfers_},
+                      {"date", request.date_}});
+
+  // std::ofstream out("out.json");
+  // out << data.dump(2);
   json data = json::parse(response.text);
-  
-  std::vector<Route> extracted_routes =
+  std::optional<std::vector<Route>> extracted_routes =
       APIJsonExtracter{}.Extract(data, request);
 
   return extracted_routes;
@@ -18,10 +30,10 @@ std::vector<Route> YandexRepository::GetRoute(const RouteRequest& request) {
 
 // pattern caching proxy
 
-std::vector<Route> CacheRepository::GetRoute(
+std::optional<std::vector<Route>> CacheRepository::GetRoute(
     const RouteRequest& request) {
   auto cached_value = cache_.TryExtract(request);
-  std::vector<Route> extracted_routes;
+  std::optional<std::vector<Route>> extracted_routes;
 
   if (cached_value.has_value()) {
     extracted_routes = cached_value.value();

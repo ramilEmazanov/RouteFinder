@@ -6,8 +6,12 @@
 
 #include "structs.hpp"
 
-std::vector<Route> MainService::ProcessRequest(const RouteRequest& request) {
+std::optional<std::vector<Route>> MainService::ProcessRequest(const RouteRequest& request) {
   return repo_.GetRoute(request);
 }
 
 void DataProcesser::Print() { std::cout << 1 << '\n'; }
+
+MainService::MainService(IRouteRepository& repo) : repo_(repo) {}
+
+MainService::MainService() {}

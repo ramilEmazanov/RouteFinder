@@ -3,9 +3,9 @@
 
 #include <fstream>
 #include <iostream>
+#include <json_work.hpp>
 #include <nlohmann/json.hpp>
 #include <structs.hpp>
-#include <json_work.hpp>
 
 using json = nlohmann::json;
 
@@ -14,7 +14,7 @@ struct Cache {
   std::optional<std::vector<Route>> TryExtract(const RouteRequest& request);
 
   void WriteToCache(const RouteRequest& request,
-                    const std::vector<Route>& route);
+                    const std::optional<std::vector<Route>>& route);
 
   Cache() = default;
   Cache(std::string cache_file) : file_(cache_file) {}

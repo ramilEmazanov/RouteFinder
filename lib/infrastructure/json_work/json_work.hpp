@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <structs.hpp>
 #include <vector>
+#include <optional>
 
 using json = nlohmann::json;
 
@@ -14,7 +15,7 @@ struct CacheJsonExtracter {
 // Служебный класс для работы с JSON
 // Достает из переданного ему JSON из api vector<Route>
 struct APIJsonExtracter {
-  std::vector<Route> Extract(const json& data, const RouteRequest& request);
+  std::optional<std::vector<Route>> Extract(const json& data, const RouteRequest& request);
 };
 
 // Служебный класс для работы с JSON

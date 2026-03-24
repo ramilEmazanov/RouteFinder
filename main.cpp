@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <presentation.hpp>
 #include <repos.hpp>
 #include <stations_parser.hpp>
 #include <vector>
@@ -44,22 +45,50 @@ int main(int argc, const char** argv) {
 
   // service.PrintAnswer();
 
-  cpr::Response r =
-      cpr::Get(cpr::Url{"https://api.rasp.yandex-net.ru/v3.0/search/"},
-               cpr::Parameters{{"apikey",
-               "e8083d0b-419e-4c46-b6b2-e5933f3bcc4d"},
-                               {"from", "c5"},
-                               {"to", "c213"},
-                               {"format", "json"},
-                               {"lang", "ru_RU"},
-                               {"date", "2026-03-24"}});
+  // cpr::Response r =
+  //     cpr::Get(cpr::Url{"https://api.rasp.yandex-net.ru/v3.0/search/"},
+  //              cpr::Parameters{{"apikey",
+  //              "e8083d0b-419e-4c46-b6b2-e5933f3bcc4d"},
+  //                              {"from", "c5"},
+  //                              {"to", "c172"},
+  //                              {"format", "json"},
+  //                              {"lang", "ru_RU"},
+  //                              {"transfers", "true"},
+  //                              {"date", "2026-05-24"}});
 
   // std::cout << r.text;
 
-  json data = json::parse(r.text);
-  std::ofstream out("ivanovo_msk.json", std::ios::trunc);
-  out << data.dump(2);
+  // std::ifstream in("kazan_ufa.json");
+  // json data = json::parse(in);
+
+  try {
+    RouteRequest route = CLIParser{}.ParseCLI(argc, argv);
+
+    MainStationsDictService{}.MakeStationsDict();
+
+    YandexRepository yandex_repo{};
+
+    std::optional<std::vector<Route>> response =
+        MainService{yandex_repo}.ProcessRequest(route);
+
+    RoutePrinter{}.PrintRoute("lol");
+    // std::optional<std::vector<Route>> routes =
+    //     YandexRepository{}.GetRoute(route);
+
+    // for (const auto& route : *routes) {
+    //   std::cout << route.departure_city_ << '\n';
+    //   std::cout << route.arrival_city_ << '\n';
+    //   std::cout << route.departure_time_ << '\n';
+    //   std::cout << route.arrival_time_ << '\n';
+    //   std::cout << '\n';
+    // }
+  } catch (const std::exception& e) {
+    std::cout << e.what();
+  }
+  // std::ofstream out("kazan_ufa_2.json", std::ios::trunc);
+  // out << data.dump(2);
   return 0;
 }
 
 // c5 ivanovo
+// c172 ivanovo

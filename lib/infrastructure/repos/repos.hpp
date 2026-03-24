@@ -14,7 +14,7 @@
 // превращает в vector<Route>
 struct YandexRepository : IRouteRepository {
  public:
-  std::vector<Route> GetRoute(const RouteRequest& request) override;
+  std::optional<std::vector<Route>> GetRoute(const RouteRequest& request) override;
  private:
 };
 
@@ -24,7 +24,7 @@ struct CacheRepository : IRouteRepository {
   CacheRepository(IRouteRepository& yandex, Cache& cache)
       : api_repo_(yandex), cache_(cache) {}
 
-  std::vector<Route> GetRoute(const RouteRequest& request) override;
+  std::optional<std::vector<Route>> GetRoute(const RouteRequest& request) override;
 
  private:
   Cache& cache_;

@@ -5,18 +5,21 @@
 #include <structs.hpp>
 #include <unordered_map>
 #include <vector>
+#include <optional>
 
 struct IRouteRepository {
-  virtual std::vector<Route> GetRoute(const RouteRequest& request) = 0;
+  virtual std::optional<std::vector<Route>> GetRoute(const RouteRequest& request) = 0;
   virtual ~IRouteRepository() = default;
 };
 
 struct RouteRespone {};
 
 struct MainService {
+  MainService();
+
   MainService(IRouteRepository& repo) : repo_(repo) {}
 
-  std::vector<Route> ProcessRequest(const RouteRequest& request);
+  std::optional<std::vector<Route>> ProcessRequest(const RouteRequest& request);
   // Вектор путей это уже готовые пути которые потенциально можно вывести
   // пользователю
 

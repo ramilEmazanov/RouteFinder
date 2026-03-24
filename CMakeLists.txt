@@ -30,4 +30,5 @@ target_link_libraries(labwork7 PRIVATE
     cache_repo
     repos
     stations_parser
+    presentation
 )
