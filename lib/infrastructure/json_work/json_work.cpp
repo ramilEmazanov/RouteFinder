@@ -9,8 +9,6 @@ std::vector<Route> CacheJsonExtracter::Extract(const json& data,
   return route;
 }
 
-// Служебный класс для работы с JSON
-// Достает из переданного ему JSON из api vector<Route>
 std::optional<std::vector<Route>> APIJsonExtracter::Extract(const json& data,
                                              const RouteRequest& request) {
   int routes_count = data["pagination"]["total"].get<int>();
@@ -21,6 +19,7 @@ std::optional<std::vector<Route>> APIJsonExtracter::Extract(const json& data,
   std::vector<Route> response;
   response.reserve(routes_count);
 
+  // Не должен фильтровать по никаким признакам. Только сырые has_transfers, transport  
   for (const auto& segment : data["segments"]) {
     if (segment["has_transfers"] == false) {
       Route route;

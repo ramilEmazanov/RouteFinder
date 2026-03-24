@@ -12,23 +12,17 @@ struct IRouteRepository {
   virtual ~IRouteRepository() = default;
 };
 
-struct RouteRespone {};
+struct ICitiesDict {
+  virtual std::unordered_map<std::string, std::string> MakeCitiesDict() = 0;
+  virtual ~ICitiesDict() = default;
+};
 
 struct MainService {
-  MainService();
-
-  MainService(IRouteRepository& repo) : repo_(repo) {}
+  MainService(IRouteRepository& repo, ICitiesDict& cities);
 
   std::optional<std::vector<Route>> ProcessRequest(const RouteRequest& request);
-  // Вектор путей это уже готовые пути которые потенциально можно вывести
-  // пользователю
-
+  
  private:
   IRouteRepository& repo_;
+  ICitiesDict& cities_;
 };
-
-struct DataProcesser {
-  void Print();
-};
-
-struct DataPrinter {};

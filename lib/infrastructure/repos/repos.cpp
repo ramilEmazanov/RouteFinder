@@ -1,10 +1,5 @@
 #include "repos.hpp"
 
-// YandexRepository внутри себя:
-// делает HTTP-запрос
-// получает JSON
-// парсит JSON
-// превращает в vector<Route>
 std::optional<std::vector<Route>> YandexRepository::GetRoute(
     const RouteRequest& request) {
   std::string url = "https://api.rasp.yandex.net/v3.0/search/";
@@ -19,16 +14,14 @@ std::optional<std::vector<Route>> YandexRepository::GetRoute(
                       {"transfers", request.has_transfers_},
                       {"date", request.date_}});
 
-  // std::ofstream out("out.json");
-  // out << data.dump(2);
+  std::ofstream out("kazan_ufa.json");
   json data = json::parse(response.text);
+  out << data.dump(2);
   std::optional<std::vector<Route>> extracted_routes =
       APIJsonExtracter{}.Extract(data, request);
 
   return extracted_routes;
 }
-
-// pattern caching proxy
 
 std::optional<std::vector<Route>> CacheRepository::GetRoute(
     const RouteRequest& request) {

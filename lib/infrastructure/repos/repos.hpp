@@ -7,18 +7,12 @@
 #include <structs.hpp>
 #include <cache.hpp>
 
-// YandexRepository внутри себя:
-// делает HTTP-запрос
-// получает JSON
-// парсит JSON
-// превращает в vector<Route>
 struct YandexRepository : IRouteRepository {
  public:
   std::optional<std::vector<Route>> GetRoute(const RouteRequest& request) override;
  private:
 };
 
-// pattern caching proxy
 struct CacheRepository : IRouteRepository {
  public:
   CacheRepository(IRouteRepository& yandex, Cache& cache)

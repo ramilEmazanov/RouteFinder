@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <stdexcept>
+#include <iostream>
 #include <string>
 #include <structs.hpp>
 #include <vector>
@@ -15,5 +16,5 @@ struct CLIParser {
 };
 
 struct RoutePrinter {
-  void PrintRoute(std::string routes);
+  void PrintRoutes(const std::optional<std::vector<Route>>& routes);
 };

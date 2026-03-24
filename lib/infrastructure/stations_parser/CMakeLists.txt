@@ -15,4 +15,5 @@ target_link_libraries(stations_parser
 PRIVATE
 nlohmann_json
 cpr
+business_logic
 )

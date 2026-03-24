@@ -47,4 +47,17 @@ RouteRequest CLIParser::ParseCLI(int argc, const char** argv) {
   return request;
 }
 
-void RoutePrinter::PrintRoute(std::string route) {}
+void RoutePrinter::PrintRoutes(const std::optional<std::vector<Route>>& routes) {
+  if (!routes.has_value()) {
+    std::cout << "No routes found\n";
+    return;
+  }
+
+  for (const auto& route : *routes) {
+    std::cout << "From: " << route.departure_city_ << '\n';
+    std::cout << "To: " << route.arrival_city_ << '\n';
+    std::cout << "Departure: " << route.departure_time_ << '\n';
+    std::cout << "Arrival: " << route.arrival_time_ << '\n';
+    std::cout << '\n';
+  }
+}

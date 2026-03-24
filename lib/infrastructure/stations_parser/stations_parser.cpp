@@ -5,7 +5,7 @@ using json = nlohmann::json;
 namespace {
 const long long kOneWeekInSeconds = 7 * 24 * 60 * 60;
 
-bool IsStationsDictFresh(long long date) {
+bool IsCitiesDictFresh(long long date) {
   auto epoch = std::chrono::system_clock::now().time_since_epoch();
   long long now =
       std::chrono::duration_cast<std::chrono::seconds>(epoch).count();
@@ -25,7 +25,7 @@ bool IsCacheFresh(std::ifstream& file) {
 
       if (data.contains("request_unix_time") &&
           data["request_unix_time"].is_number()) {
-        if (IsStationsDictFresh(data["request_unix_time"].get<long long>())) {
+        if (IsCitiesDictFresh(data["request_unix_time"].get<long long>())) {
           is_fresh = true;
         }
       }
@@ -40,47 +40,50 @@ bool IsCacheFresh(std::ifstream& file) {
 }
 };  // namespace
 
-void MainStationsDictService::MakeStationsDict() {
-  std::ifstream file("stations_dictionary.json");
+std::unordered_map<std::string, std::string>
+YandexCitiesDict::MakeCitiesDict() {
+  std::ifstream file("cities_dict.json");
 
-  if(IsCacheFresh(file)) return;
+  if (IsCacheFresh(file)) {
+    file.seekg(0);
+    json clean_json = json::parse(file);
+    return JsonToUnorderedMapMaker{}.TurnJsonToMap(clean_json);
+  };
 
-  json raw_json = RawStationsJsonRequester{}.RequestAPIJson();
-  json clean_json = StationsDictMaker{}.BuildStationsDict(raw_json);
-  CleanJsonStationsDictWriter{}.WriteCleanStationsDict(clean_json);
+  json raw_json = RawCitiesJsonRequester{}.RequestAPIJson();
+  json clean_json = CitiesDictMaker{}.BuildCitiesDict(raw_json);
+  CleanJsonCitiesDictWriter{}.WriteCleanCitiesDict(clean_json);
+  return JsonToUnorderedMapMaker{}.TurnJsonToMap(clean_json);
 }
 
-// Только вытаскивает сырой JSON
-json RawStationsJsonRequester::RequestAPIJson() {
-  cpr::Response stations_list = cpr::Get(
+json RawCitiesJsonRequester::RequestAPIJson() {
+  cpr::Response cities_list = cpr::Get(
       cpr::Url{"https://api.rasp.yandex-net.ru/v3.0/stations_list/"},
       cpr::Parameters{{"apikey", "e8083d0b-419e-4c46-b6b2-e5933f3bcc4d"},
                       {"format", "json"},
                       {"lang", "ru_RU"}});
 
-  if (stations_list.status_code != 200) {
-    throw std::runtime_error("Failed to load stations list");
+  if (cities_list.status_code != 200) {
+    throw std::runtime_error("Failed to load cities list");
   }
 
   try {
-    return json::parse(stations_list.text);
+    return json::parse(cities_list.text);
   } catch (const json::parse_error& e) {
     throw std::runtime_error(std::string("Invalid JSON from API : ") +
                              e.what());
   }
 }
 
-// Запишет этот JSON в память
-void CleanJsonStationsDictWriter::WriteCleanStationsDict(const json& data) {
-  std::ofstream out("stations_dictionary.json");
+void CleanJsonCitiesDictWriter::WriteCleanCitiesDict(const json& data) {
+  std::ofstream out("cities_dict.json");
   if (!out) {
-    throw std::runtime_error("Failed to open stations_Dict.json for writing");
+    throw std::runtime_error("Failed to open cities_dict.json for writing");
   }
   out << data.dump(2);
 }
 
-// Он уже будет создавать JSON нужного нам формата
-json StationsDictMaker::BuildStationsDict(const json& stations_json) {
+json CitiesDictMaker::BuildCitiesDict(const json& Cities_json) {
   json clean_json;
 
   auto epoch = std::chrono::system_clock::now().time_since_epoch();
@@ -90,7 +93,7 @@ json StationsDictMaker::BuildStationsDict(const json& stations_json) {
   clean_json["request_unix_time"] = seconds;
   clean_json["cities"] = json::object();
 
-  for (const auto& country : stations_json["countries"]) {
+  for (const auto& country : Cities_json["countries"]) {
     for (const auto& region : country["regions"]) {
       for (const auto& settlement : region["settlements"]) {
         if (settlement["codes"].contains("yandex_code") &&
@@ -105,4 +108,16 @@ json StationsDictMaker::BuildStationsDict(const json& stations_json) {
     }
   }
   return clean_json;
+}
+
+std::unordered_map<std::string, std::string>
+JsonToUnorderedMapMaker::TurnJsonToMap(const json& data) {
+  std::unordered_map<std::string, std::string> map;
+
+  for (const auto& pair : data["cities"].items()) {
+    // std::cout << pair.key() << " " << pair.value().get<std::string>() << '\n';
+    map.emplace(pair.key(), pair.value().get<std::string>());
+  }
+
+  return map;
 }

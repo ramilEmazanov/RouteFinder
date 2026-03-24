@@ -5,24 +5,29 @@
 #include <nlohmann/json.hpp>
 #include <chrono>
 #include <iostream>
+#include <business_logic.hpp>
 using json = nlohmann::json;
 
 // Основной сервис для управления словарем городов 
-struct MainStationsDictService {
-  void MakeStationsDict();
+struct YandexCitiesDict : ICitiesDict {
+  std::unordered_map<std::string, std::string> MakeCitiesDict();
 };
 
 // Только вытаскивает сырой JSON
-struct RawStationsJsonRequester {
+struct RawCitiesJsonRequester {
   json RequestAPIJson();
 };
 
 // Запишет этот JSON в память
-struct CleanJsonStationsDictWriter {
-  void WriteCleanStationsDict(const json& data);
+struct CleanJsonCitiesDictWriter {
+  void WriteCleanCitiesDict(const json& data);
 };
 
 // Он уже будет создавать JSON нужного нам формата
-struct StationsDictMaker {
-  json BuildStationsDict(const json& data);
+struct CitiesDictMaker {
+  json BuildCitiesDict(const json& data);
+};
+
+struct JsonToUnorderedMapMaker {
+  std::unordered_map<std::string, std::string> TurnJsonToMap(const json& data);
 };
