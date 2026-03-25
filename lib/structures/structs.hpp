@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <filesystem>
 
 struct TransferInfo {
   std::string city_title;
@@ -52,3 +53,8 @@ struct RouteRequest {
   
   std::string has_transfers_ = "false";
 };
+
+// struct AppPaths {
+//   std::filesystem::path cache_file;
+//   std::filesystem::path dictionary_file;
+// };

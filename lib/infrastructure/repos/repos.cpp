@@ -25,11 +25,10 @@ std::optional<std::vector<Route>> YandexRepository::GetRoute(
 
 std::optional<std::vector<Route>> CacheRepository::GetRoute(
     const RouteRequest& request) {
-  auto cached_value = cache_.TryExtract(request);
-  std::optional<std::vector<Route>> extracted_routes;
+  std::optional<std::vector<Route>> extracted_routes =
+      cache_.Extract(request);
 
-  if (cached_value.has_value()) {
-    extracted_routes = cached_value.value();
+  if (extracted_routes.has_value()) {
     return extracted_routes;
   }
 

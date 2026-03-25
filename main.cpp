@@ -17,8 +17,13 @@ int main(int argc, const char** argv) {
     RouteRequest route = CLIParser{}.ParseCLI(argc, argv);
 
     YandexRepository yandex_repo{};
+    
+    Cache cache("cache.json");
+    CacheRepository cache_repo(yandex_repo, cache);
+    
     YandexCitiesDict yandex_cities{};
-    MainService service{yandex_repo, yandex_cities};
+
+    MainService service{cache_repo, yandex_cities};
 
     std::optional<std::vector<Route>> routes = service.ProcessRequest(route);
     RoutePrinter{}.PrintRoutes(routes);

@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <cpr/cpr.h>
 
 #include <business_logic.hpp>
 #include <structs.hpp>

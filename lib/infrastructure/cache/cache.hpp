@@ -1,24 +1,38 @@
 #pragma once
-#include <cpr/cpr.h>
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <json_work.hpp>
 #include <nlohmann/json.hpp>
 #include <structs.hpp>
+#include <unordered_map>
+#include <vector>
+#include <json_work.hpp>
 
 using json = nlohmann::json;
 
+struct CacheEntry {
+  long long request_unix_time_;
+  std::optional<std::vector<Route>> routes_;
+
+  CacheEntry(long long request_unix_time,
+             const std::optional<std::vector<Route>>& route);
+};
+
 struct Cache {
  public:
-  std::optional<std::vector<Route>> TryExtract(const RouteRequest& request);
+  std::optional<std::vector<Route>> Extract(const RouteRequest& request);
 
   void WriteToCache(const RouteRequest& request,
                     const std::optional<std::vector<Route>>& route);
 
-  Cache() = default;
-  Cache(std::string cache_file) : file_(cache_file) {}
+  Cache(const std::string& file);
+
+  void CheckFreshness();
+
+  ~Cache();
 
  private:
-  std::string file_;
+  std::optional<std::unordered_map<std::string, CacheEntry>> cache_;
 };

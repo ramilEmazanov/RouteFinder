@@ -17,7 +17,7 @@ std::optional<std::vector<Route>> MainService::ProcessRequest(const RouteRequest
 
   if (!cities_dict.contains(request.arrival_city_) ||
       !cities_dict.contains(request.departure_city_)) {
-    throw std::runtime_error("No requested cities found\n");
+    throw std::runtime_error("No requested cities found in database\n");
   }
 
   // Распарсить дату, перевести в unix_time, проверить, что она старше
@@ -33,8 +33,8 @@ std::optional<std::vector<Route>> MainService::ProcessRequest(const RouteRequest
     return std::nullopt;
   }
 
-  std::vector<Route> filtered_results;
-  filtered_results.reserve(response.value().size());
+  // std::vector<Route> filtered_results;
+  // filtered_results.reserve(response.value().size());
 
   
   // Фильтруем нужные нам данные, отдаем в RoutePrint

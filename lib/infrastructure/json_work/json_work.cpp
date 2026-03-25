@@ -3,10 +3,8 @@
 #include <iostream>
 // Служебный класс для работы с Json
 // Достает из переданного ему JSON кэша и Request - vector<Route>
-std::vector<Route> CacheJsonExtracter::Extract(const json& data,
-                                               const RouteRequest& request) {
-  std::vector<Route> route;
-  return route;
+std::pair<std::string, std::vector<Route>> CacheMaker::Extract(const json& data) {
+  return std::pair<std::string, std::vector<Route>>{};
 }
 
 Route APIJsonExtracter::ParseDirectRoute(const json& data,

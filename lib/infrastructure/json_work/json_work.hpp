@@ -8,8 +8,8 @@ using json = nlohmann::json;
 
 // Служебный класс для работы с Json
 // Достает из переданного ему JSON кэша и Request - vector<Route>
-struct CacheJsonExtracter {
-  std::vector<Route> Extract(const json& data, const RouteRequest& request);
+struct CacheMaker {
+  std::pair<std::string, std::vector<Route>> Extract(const json& data);
 };
 
 struct APIJsonExtracter {
@@ -22,7 +22,6 @@ struct APIJsonExtracter {
 };
 
 // Служебный класс для работы с JSON
-struct JsonWriter {
-  void Write(const RouteRequest& request, const std::vector<Route>& route,
-             json& data);
+struct CacheWriter {
+  void Write(const std::string& key, std::optional<std::vector<Route>>);
 };
