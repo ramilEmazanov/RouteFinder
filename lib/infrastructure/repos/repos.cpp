@@ -11,7 +11,7 @@ std::optional<std::vector<Route>> YandexRepository::GetRoute(
                       {"to", request.arrival_city_},
                       {"format", "json"},
                       {"lang", "ru_RU"},
-                      {"transfers", request.has_transfers_},
+                      {"transfers", "true"},
                       {"date", request.date_}});
 
   std::ofstream out("kazan_ufa.json");
