@@ -25,20 +25,16 @@ bool MainService::RouteFilter(const Route& route, const RouteRequest& request) {
 }
 
 MainService::MainService(IRouteRepository& repo, ICitiesDict& cities)
-    : repo_(repo), cities_(cities) {}
+    : repo_(repo), cities_(cities) {
+  cities_dict = cities_.MakeCitiesDict();
+}
 
 std::optional<std::vector<Route>> MainService::ProcessRequest(
     const RouteRequest& request) {
-  std::unordered_map<std::string, std::string> cities_dict =
-      cities_.MakeCitiesDict();
-
   if (!cities_dict.contains(request.arrival_city_) ||
       !cities_dict.contains(request.departure_city_)) {
     throw std::runtime_error("No requested cities found in database\n");
   }
-
-  // Распарсить дату, перевести в unix_time, проверить, что она старше
-  // вчерашнего дня
 
   RouteRequest updated_request(request);
   updated_request.departure_city_ = cities_dict[request.departure_city_];

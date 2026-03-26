@@ -27,4 +27,5 @@ struct MainService {
  private:
   IRouteRepository& repo_;
   ICitiesDict& cities_;
+  std::unordered_map<std::string, std::string> cities_dict;
 };

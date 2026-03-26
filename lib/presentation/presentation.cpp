@@ -6,15 +6,22 @@
 
 namespace {
 
-void EnsureValueExists(size_t i, const std::vector<std::string>& tokens,
-                       const std::string& arg) {
-  if (i + 1 >= tokens.size()) {
-    throw std::runtime_error("Missing value for " + arg);
-  }
+std::unordered_map<std::string, std::string> kTransportNames{
+    {"plane", "Самолет"},           {"train", "Поезд"},
+    {"suburban", "Электричка"},     {"bus", "Автобус"},
+    {"water", "Морской транспорт"}, {"helicopter", "Вертолет"}};
 
-  if (!tokens[i + 1].empty() && tokens[i + 1][0] == '-') {
-    throw std::runtime_error("Missing value for " + arg);
+std::unordered_set<std::string> kAllowed = {"train",    "plane", "bus",
+                                            "suburban", "water", "helicopter"};
+
+bool IsValidDateFormat(const std::string& date) {
+  if (date.size() != 10) {
+    return false;
   }
+  return std::isdigit(date[0]) && std::isdigit(date[1]) &&
+         std::isdigit(date[2]) && std::isdigit(date[3]) && date[4] == '-' &&
+         std::isdigit(date[5]) && std::isdigit(date[6]) && date[7] == '-' &&
+         std::isdigit(date[8]) && std::isdigit(date[9]);
 }
 
 std::string SecondsToHoursMinutes(int seconds) {
@@ -34,8 +41,6 @@ std::string SecondsToHoursMinutes(int seconds) {
   return result;
 }
 
-namespace {
-
 std::string FormatDateTime(const std::string& iso) {
   if (iso.size() < 25) {
     return iso;
@@ -48,8 +53,6 @@ std::string FormatDateTime(const std::string& iso) {
 
   return day + "." + month + " " + time + " (" + "UTC " + offset + ")";
 }
-
-}  // namespace
 
 }  // namespace
 
@@ -66,7 +69,7 @@ void RoutePrinter::PrintSegment(const Segment& segment, int index) {
   std::cout << "Время прибытия: " << FormatDateTime(segment.arrival_time)
             << '\n';
 
-  std::cout << "Тип транспорта: " << transport_types.map[segment.transport_type]
+  std::cout << "Тип транспорта: " << kTransportNames[segment.transport_type]
             << '\n';
 
   std::cout << "Перевозчик / маршрут: " << segment.carrier_title << '\n';
@@ -127,54 +130,84 @@ void RoutePrinter::PrintRoutes(
   }
 }
 
-std::vector<std::string> CLIParser::Tokenize(const std::string& line) {
-  std::istringstream input(line);
-  std::vector<std::string> tokens;
-  std::string token;
+std::string CLIParser::AskNonEmptyString(const std::string& request) {
+  while (true) {
+    std::cout << request;
+    std::string input;
+    std::getline(std::cin, input);
 
-  while (input >> token) {
-    tokens.push_back(token);
+    if (!input.empty()) {
+      return input;
+    }
+
+    std::cout << "Поле не может быть пустым. Попробуйте ещё раз.\n";
   }
-
-  return tokens;
 }
 
-RouteRequest CLIParser::ParseTokens(const std::vector<std::string>& tokens) {
-  RouteRequest request{};
+std::string CLIParser::AskDate() {
+  while (true) {
+    std::cout << "Введите дату (YYYY-MM-DD): ";
+    std::string date;
+    std::getline(std::cin, date);
 
-  for (size_t i = 0; i < tokens.size(); ++i) {
-    const std::string& arg = tokens[i];
-
-    if (arg == "--from") {
-      EnsureValueExists(i, tokens, arg);
-      request.departure_city_ = tokens[++i];
-    } else if (arg == "--to") {
-      EnsureValueExists(i, tokens, arg);
-      request.arrival_city_ = tokens[++i];
-    } else if (arg == "--date") {
-      EnsureValueExists(i, tokens, arg);
-      request.date_ = tokens[++i];
-    } else if (arg == "--transport") {
-      EnsureValueExists(i, tokens, arg);
-      request.transport_type_ = tokens[++i];
-    } else if (arg == "--transfers") {
-      request.has_transfers_ = tokens[i];
-    } else {
-      throw std::runtime_error("Unknown argument: " + arg);
+    if (IsValidDateFormat(date)) {
+      return date;
     }
-  }
 
-  if (request.departure_city_.empty()) {
-    throw std::runtime_error("Missing --from");
+    std::cout << "Некорректный формат даты. Попробуйте ещё раз.\n";
   }
-  if (request.arrival_city_.empty()) {
-    throw std::runtime_error("Missing --to");
-  }
-  if (request.date_.empty()) {
-    throw std::runtime_error("Missing --date");
-  }
+}
 
+std::optional<std::string> CLIParser::AskTransport() {
+  while (true) {
+    std::cout << "Введите тип транспорта "
+                 "(train/plane/bus/suburban/water/helicopter) "
+                 "или оставьте пустым: ";
+
+    std::string input;
+    std::getline(std::cin, input);
+
+    if (input.empty()) {
+      return std::nullopt;
+    }
+
+    if (kAllowed.contains(input)) {
+      return input;
+    }
+
+    std::cout << "Неизвестный тип транспорта. Попробуйте ещё раз.\n";
+  }
+}
+
+std::string CLIParser::AskTransfers() {
+  while (true) {
+    std::cout << "Разрешить до одной пересадки? (yes/no): ";
+    std::string input;
+    std::getline(std::cin, input);
+
+    if (input == "yes") {
+      return "true";
+    }
+    if (input == "no") {
+      return "false";
+    }
+
+    std::cout << "Введите yes или no.\n";
+  }
+}
+
+RouteRequest CLIParser::ReadInteractiveRequest() {
+  RouteRequest request;
+  request.departure_city_ = AskNonEmptyString("Введите город отправления: ");
+  request.arrival_city_ = AskNonEmptyString("Введите город прибытия: ");
+  request.date_ = AskDate();
+  request.transport_type_ = AskTransport();
+  request.has_transfers_ = AskTransfers();
   return request;
 }
 
-void CLIParser::PrintHelp() {}
+void CLIParser::PrintHelp() {
+  std::cout
+      << "Программа ищет маршруты между городами через API Яндекс Расписаний.\n"
+         "В интерактивном режиме поля вводятся по отдельности.\n";
+}

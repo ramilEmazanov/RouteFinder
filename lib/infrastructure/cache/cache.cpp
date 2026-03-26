@@ -46,6 +46,7 @@ std::optional<std::vector<Route>> Cache::Extract(const RouteRequest& request) {
 void Cache::WriteToCache(const RouteRequest& request,
                          const std::optional<std::vector<Route>>& route) {
   DeleteOldRequests();
+  ControlMaxCacheSize();
   std::string key = MakeKey(request);
   auto epoch = std::chrono::system_clock::now().time_since_epoch();
   long long request_unix_time =
@@ -90,7 +91,7 @@ void to_json(json& j, const CacheEntry& entry) {
 
 Cache::~Cache() {
   json j = cache_;
-  std::ofstream out("cache.json");
+  std::ofstream out(file_);
 
   if (!out.is_open()) {
     return;
@@ -154,18 +155,19 @@ void from_json(const json& j,
   }
 }
 
-Cache::Cache(const std::string& file) {
-  std::ifstream in(file);
+Cache::Cache(const std::string& file, int cache_size)
+    : file_(file), cache_max_size(cache_size) {
+  std::ifstream in(file_);
 
   if (!in.is_open()) {
     return;
   }
 
-  
   try {
     json data = json::parse(in);
     cache_ = data.get<std::unordered_map<std::string, CacheEntry>>();
     DeleteOldRequests();
+    ControlMaxCacheSize();
   } catch (std::exception& e) {
     cache_.clear();
   }
@@ -184,5 +186,19 @@ void Cache::DeleteOldRequests() {
     } else {
       it++;
     }
+  }
+}
+
+void Cache::ControlMaxCacheSize() {
+  while(cache_.size() > cache_max_size) {
+    std::string oldest_key;
+    long long oldest_time = -1;
+    for(const auto& [key, value] : cache_) {
+      if(value.request_unix_time_ > oldest_time) {
+        oldest_time = value.request_unix_time_;
+        oldest_key = key;
+      }
+    }
+    cache_.erase(oldest_key);
   }
 }

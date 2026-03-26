@@ -1,16 +1,12 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include <optional>
 #include <filesystem>
+#include <optional>
+#include <string>
 #include <unordered_map>
-
-struct TransportTypes {
-  std::unordered_map<std::string, std::string> map;
-  TransportTypes();
-};
+#include <unordered_set>
+#include <vector>
 
 struct TransferInfo {
   std::string city_title;
@@ -31,7 +27,6 @@ struct Segment {
   std::string transport_type;
   std::string carrier_title;
   int duration_seconds = 0;
-
 };
 
 struct Route {
@@ -56,7 +51,7 @@ struct RouteRequest {
   std::string date_;
 
   std::optional<std::string> transport_type_;
-  
+
   std::string has_transfers_ = "false";
 };
 

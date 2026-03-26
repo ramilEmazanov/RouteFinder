@@ -23,17 +23,23 @@ struct CacheEntry {
 
 struct Cache {
  public:
+  static constexpr int kDefaultCacheSize = 10;
+
   std::optional<std::vector<Route>> Extract(const RouteRequest& request);
 
   void WriteToCache(const RouteRequest& request,
                     const std::optional<std::vector<Route>>& route);
 
-  Cache(const std::string& file);
+  Cache(const std::string& file, int cache_size = kDefaultCacheSize);
 
   ~Cache();
 
   void DeleteOldRequests();
 
+  void ControlMaxCacheSize();
+
   private:
+  int cache_max_size;
+  std::string file_;
   std::unordered_map<std::string, CacheEntry> cache_;
 };

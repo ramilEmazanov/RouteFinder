@@ -14,6 +14,10 @@ std::optional<std::vector<Route>> YandexRepository::GetRoute(
                       {"transfers", "true"},
                       {"date", request.date_}});
 
+  if(response.status_code != 200) {
+    throw std::runtime_error("Failed to make HTTP request\n");
+  }
+
   json data = json::parse(response.text);
   std::optional<std::vector<Route>> extracted_routes =
       APIJsonExtracter{}.Extract(data, request);

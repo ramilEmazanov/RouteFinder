@@ -16,36 +16,34 @@ int main(int argc, const char** argv) {
   CLIParser parser;
   YandexRepository yandex_repo{};
   Cache cache("cache.json");
-  
+
   CacheRepository cache_repo(yandex_repo, cache);
   YandexCitiesDict yandex_cities{};
   MainService service{cache_repo, yandex_cities};
   RoutePrinter printer;
 
   while (true) {
-    std::cout << "> ";
+    std::cout << "\n1. Новый запрос\n2. Помощь\n3. Выход\n> ";
 
-    std::string line;
-    if (!std::getline(std::cin, line)) {
+    std::string cmd;
+    std::getline(std::cin, cmd);
+
+    if (cmd == "3") {
       break;
     }
 
-    if (line.empty()) {
-      continue;
-    }
-
-    if (line == "quit") {
-      break;
-    }
-
-    if (line == "help") {
+    if (cmd == "2") {
       parser.PrintHelp();
       continue;
     }
 
+    if (cmd != "1") {
+      std::cout << "Неизвестная команда.\n";
+      continue;
+    }
+
     try {
-      std::vector<std::string> tokens = parser.Tokenize(line);
-      RouteRequest request = parser.ParseTokens(tokens);
+      RouteRequest request = parser.ReadInteractiveRequest();
       std::optional<std::vector<Route>> routes =
           service.ProcessRequest(request);
 
