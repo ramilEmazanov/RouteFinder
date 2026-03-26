@@ -1,57 +1,21 @@
 #include "presentation.hpp"
 
-void CLIParser::EnsureValueExists(int i, int argc, const std::string& arg) {
-  if (i + 1 >= argc) {
-    throw std::runtime_error("Missing value for " + arg);
-  }
-  std::vector<std::string> flags = {"--from", "--to", "--date", "--transport"};
-
-  for (const auto& flag : flags) {
-    if (flag == arg) {
-      throw std::runtime_error("Missing value for " + arg);
-    }
-  }
-}
-
-RouteRequest CLIParser::ParseCLI(int argc, const char** argv) {
-  RouteRequest request{};
-
-  for (int i = 1; i < argc; ++i) {
-    std::string arg = argv[i];
-
-    if (arg == "--from") {
-      EnsureValueExists(i, argc, argv[i + 1]);
-      request.departure_city_ = argv[++i];
-    }
-    if (arg == "--to") {
-      EnsureValueExists(i, argc, argv[i + 1]);
-      request.arrival_city_ = argv[++i];
-    }
-    if (arg == "--date") {
-      EnsureValueExists(i, argc, argv[i + 1]);
-      request.date_ = argv[++i];
-    }
-    if (arg == "--transport") {
-      EnsureValueExists(i, argc, argv[i + 1]);
-      request.transport_type_ = argv[++i];
-    }
-    if (arg == "--transfers") {
-      request.has_transfers_ = "true";
-    }
-  }
-  if (request.departure_city_.empty() || request.arrival_city_.empty() ||
-      request.date_.empty()) {
-    throw std::runtime_error("No required argument");
-  }
-
-  return request;
-}
-
 #include <iostream>
 
 #include "structs.hpp"
 
 namespace {
+
+void EnsureValueExists(size_t i, const std::vector<std::string>& tokens,
+                       const std::string& arg) {
+  if (i + 1 >= tokens.size()) {
+    throw std::runtime_error("Missing value for " + arg);
+  }
+
+  if (!tokens[i + 1].empty() && tokens[i + 1][0] == '-') {
+    throw std::runtime_error("Missing value for " + arg);
+  }
+}
 
 void PrintSegment(const Segment& segment, int index) {
   std::cout << "Сегмент №" << index << ":\n";
@@ -123,3 +87,56 @@ void RoutePrinter::PrintRoutes(
     std::cout << "----------------------------------------\n";
   }
 }
+
+std::vector<std::string> CLIParser::Tokenize(const std::string& line) {
+  std::istringstream input(line);
+  std::vector<std::string> tokens;
+  std::string token;
+
+  while (input >> token) {
+    tokens.push_back(token);
+  }
+
+  return tokens;
+}
+
+RouteRequest CLIParser::ParseTokens(const std::vector<std::string>& tokens) {
+  RouteRequest request{};
+
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    const std::string& arg = tokens[i];
+
+    if (arg == "--from") {
+      EnsureValueExists(i, tokens, arg);
+      request.departure_city_ = tokens[++i];
+    } else if (arg == "--to") {
+      EnsureValueExists(i, tokens, arg);
+      request.arrival_city_ = tokens[++i];
+    } else if (arg == "--date") {
+      EnsureValueExists(i, tokens, arg);
+      request.date_ = tokens[++i];
+    } else if (arg == "--transport") {
+      EnsureValueExists(i, tokens, arg);
+      request.transport_type_ = tokens[++i];
+    } else if (arg == "--transfers") {
+      EnsureValueExists(i, tokens, arg);
+      request.has_transfers_ = tokens[++i];
+    } else {
+      throw std::runtime_error("Unknown argument: " + arg);
+    }
+  }
+
+  if (request.departure_city_.empty()) {
+    throw std::runtime_error("Missing --from");
+  }
+  if (request.arrival_city_.empty()) {
+    throw std::runtime_error("Missing --to");
+  }
+  if (request.date_.empty()) {
+    throw std::runtime_error("Missing --date");
+  }
+
+  return request;
+}
+
+void CLIParser::PrintHelp() {}

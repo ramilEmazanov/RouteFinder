@@ -13,23 +13,46 @@
 using json = nlohmann::json;
 
 int main(int argc, const char** argv) {
-  try {
-    RouteRequest route = CLIParser{}.ParseCLI(argc, argv);
+  CLIParser parser;
+  YandexRepository yandex_repo{};
+  Cache cache("cache.json");
+  CacheRepository cache_repo(yandex_repo, cache);
+  YandexCitiesDict yandex_cities{};
+  MainService service{cache_repo, yandex_cities};
+  RoutePrinter printer;
 
-    YandexRepository yandex_repo{};
-    
-    Cache cache("cache.json");
-    CacheRepository cache_repo(yandex_repo, cache);
-    
-    YandexCitiesDict yandex_cities{};
+  while (true) {
+    std::cout << "> ";
 
-    MainService service{cache_repo, yandex_cities};
+    std::string line;
+    if (!std::getline(std::cin, line)) {
+      break;
+    }
 
-    std::optional<std::vector<Route>> routes = service.ProcessRequest(route);
-    RoutePrinter{}.PrintRoutes(routes);
+    if (line.empty()) {
+      continue;
+    }
 
-  } catch (const std::exception& e) {
-    std::cout << e.what();
+    if (line == "quit") {
+      break;
+    }
+
+    if (line == "help") {
+      parser.PrintHelp();
+      continue;
+    }
+
+    try {
+      std::vector<std::string> tokens = parser.Tokenize(line);
+      RouteRequest request = parser.ParseTokens(tokens);
+      std::optional<std::vector<Route>> routes =
+          service.ProcessRequest(request);
+
+      printer.PrintRoutes(routes);
+    } catch (const std::exception& e) {
+      std::cout << "Error: " << e.what() << '\n';
+    }
   }
+
   return 0;
 }

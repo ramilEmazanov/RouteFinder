@@ -14,9 +14,7 @@ std::optional<std::vector<Route>> YandexRepository::GetRoute(
                       {"transfers", "true"},
                       {"date", request.date_}});
 
-  std::ofstream out("kazan_ufa.json");
   json data = json::parse(response.text);
-  out << data.dump(2);
   std::optional<std::vector<Route>> extracted_routes =
       APIJsonExtracter{}.Extract(data, request);
 

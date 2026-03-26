@@ -11,8 +11,12 @@ struct CLIParser {
  public:
   RouteRequest ParseCLI(int argc, const char** argv);
 
- private:
-  void EnsureValueExists(int i, int argc, const std::string& arg);
+  std::vector<std::string> Tokenize(const std::string& line);
+
+  RouteRequest ParseTokens(const std::vector<std::string>& line);
+
+  void PrintHelp();
+
 };
 
 struct RoutePrinter {

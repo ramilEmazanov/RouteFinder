@@ -3,7 +3,6 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include <json_work.hpp>
 #include <nlohmann/json.hpp>
 #include <structs.hpp>
 #include <unordered_map>
@@ -18,6 +17,8 @@ struct CacheEntry {
 
   CacheEntry(long long request_unix_time,
              const std::optional<std::vector<Route>>& route);
+
+  CacheEntry() = default;
 };
 
 struct Cache {
@@ -29,10 +30,11 @@ struct Cache {
 
   Cache(const std::string& file);
 
-  void CheckFreshness();
-
   ~Cache();
 
- private:
-  std::optional<std::unordered_map<std::string, CacheEntry>> cache_;
+  void CheckFreshness();
+
+
+  private:
+  std::unordered_map<std::string, CacheEntry> cache_;
 };

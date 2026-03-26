@@ -1,11 +1,6 @@
 #include "json_work.hpp"
 
 #include <iostream>
-// Служебный класс для работы с Json
-// Достает из переданного ему JSON кэша и Request - vector<Route>
-std::pair<std::string, std::vector<Route>> CacheMaker::Extract(const json& data) {
-  return std::pair<std::string, std::vector<Route>>{};
-}
 
 Route APIJsonExtracter::ParseDirectRoute(const json& data,
                                          const json& segment) {
@@ -101,11 +96,4 @@ std::optional<std::vector<Route>> APIJsonExtracter::Extract(
   }
 
   return response;
-}
-
-// Служебный класс для работы с JSON
-void JsonWriter::Write(const RouteRequest& request,
-                       const std::vector<Route>& route, json& data) {
-  // Записывать в json в конец преобразованный route и выдавать тот же самый
-  // json?
 }
