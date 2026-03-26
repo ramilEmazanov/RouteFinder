@@ -1,6 +1,9 @@
 #include "cache.hpp"
 
 namespace {
+
+constexpr long long kOneHourInSeconds = 60 * 60;
+
 std::string MakeKey(const RouteRequest& request) {
   std::string response;
   response = request.departure_city_ + "|" + request.arrival_city_ + "|" +
@@ -22,6 +25,7 @@ CacheEntry::CacheEntry(long long request_unix_time,
     : request_unix_time_(request_unix_time), routes_(route) {}
 
 std::optional<std::vector<Route>> Cache::Extract(const RouteRequest& request) {
+  DeleteOldRequests();
   std::optional<std::vector<Route>> response;
 
   if (cache_.empty()) {
@@ -41,6 +45,7 @@ std::optional<std::vector<Route>> Cache::Extract(const RouteRequest& request) {
 
 void Cache::WriteToCache(const RouteRequest& request,
                          const std::optional<std::vector<Route>>& route) {
+  DeleteOldRequests();
   std::string key = MakeKey(request);
   auto epoch = std::chrono::system_clock::now().time_since_epoch();
   long long request_unix_time =
@@ -156,13 +161,28 @@ Cache::Cache(const std::string& file) {
     return;
   }
 
-  if (in.is_open()) {
+  
+  try {
     json data = json::parse(in);
+    cache_ = data.get<std::unordered_map<std::string, CacheEntry>>();
+    DeleteOldRequests();
+  } catch (std::exception& e) {
+    cache_.clear();
+  }
+}
 
-    try {
-      cache_ = data.get<std::unordered_map<std::string, CacheEntry>>();
-    } catch (std::exception& e) {
-      cache_.clear();
+void Cache::DeleteOldRequests() {
+  auto epoch = std::chrono::system_clock::now().time_since_epoch();
+  long long now =
+      std::chrono::duration_cast<std::chrono::seconds>(epoch).count();
+
+  for (auto it = cache_.begin(); it != cache_.end();) {
+    long long request_time = it->second.request_unix_time_;
+
+    if (now - request_time > kOneHourInSeconds) {
+      cache_.erase(it);
+    } else {
+      it++;
     }
   }
 }

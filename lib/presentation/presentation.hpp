@@ -1,8 +1,8 @@
 #pragma once
 
+#include <iostream>
 #include <optional>
 #include <stdexcept>
-#include <iostream>
 #include <string>
 #include <structs.hpp>
 #include <vector>
@@ -16,9 +16,15 @@ struct CLIParser {
   RouteRequest ParseTokens(const std::vector<std::string>& line);
 
   void PrintHelp();
-
 };
 
 struct RoutePrinter {
   void PrintRoutes(const std::optional<std::vector<Route>>& routes);
+
+  void PrintTransferInfo(const TransferInfo& transfer);
+
+  void PrintSegment(const Segment& segment, int index);
+
+ private:
+  TransportTypes transport_types;
 };

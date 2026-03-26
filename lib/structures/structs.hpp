@@ -5,6 +5,12 @@
 #include <vector>
 #include <optional>
 #include <filesystem>
+#include <unordered_map>
+
+struct TransportTypes {
+  std::unordered_map<std::string, std::string> map;
+  TransportTypes();
+};
 
 struct TransferInfo {
   std::string city_title;

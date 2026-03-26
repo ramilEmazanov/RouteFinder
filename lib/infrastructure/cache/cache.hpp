@@ -32,8 +32,7 @@ struct Cache {
 
   ~Cache();
 
-  void CheckFreshness();
-
+  void DeleteOldRequests();
 
   private:
   std::unordered_map<std::string, CacheEntry> cache_;

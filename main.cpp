@@ -16,6 +16,7 @@ int main(int argc, const char** argv) {
   CLIParser parser;
   YandexRepository yandex_repo{};
   Cache cache("cache.json");
+  
   CacheRepository cache_repo(yandex_repo, cache);
   YandexCitiesDict yandex_cities{};
   MainService service{cache_repo, yandex_cities};

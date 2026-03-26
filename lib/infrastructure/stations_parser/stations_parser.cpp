@@ -114,9 +114,8 @@ std::unordered_map<std::string, std::string>
 JsonToUnorderedMapMaker::TurnJsonToMap(const json& data) {
   std::unordered_map<std::string, std::string> map;
 
-  for (const auto& pair : data["cities"].items()) {
-    // std::cout << pair.key() << " " << pair.value().get<std::string>() << '\n';
-    map.emplace(pair.key(), pair.value().get<std::string>());
+  for (const auto& [key, value] : data["cities"].items()) {
+    map[key] = value.get<std::string>();
   }
 
   return map;

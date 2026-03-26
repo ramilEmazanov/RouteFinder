@@ -21,6 +21,8 @@ struct MainService {
   MainService(IRouteRepository& repo, ICitiesDict& cities);
 
   std::optional<std::vector<Route>> ProcessRequest(const RouteRequest& request);
+
+  bool RouteFilter(const Route& route, const RouteRequest& request);
   
  private:
   IRouteRepository& repo_;

@@ -17,34 +17,73 @@ void EnsureValueExists(size_t i, const std::vector<std::string>& tokens,
   }
 }
 
-void PrintSegment(const Segment& segment, int index) {
+std::string SecondsToHoursMinutes(int seconds) {
+  int hours = seconds / 3600;
+  int minutes = (seconds % 3600) / 60;
+
+  std::string result;
+
+  if (hours > 0) {
+    result += std::to_string(hours) + " ч ";
+  }
+
+  if (minutes > 0 || hours == 0) {
+    result += std::to_string(minutes) + " мин";
+  }
+
+  return result;
+}
+
+namespace {
+
+std::string FormatDateTime(const std::string& iso) {
+  if (iso.size() < 25) {
+    return iso;
+  }
+
+  std::string day = iso.substr(8, 2);
+  std::string month = iso.substr(5, 2);
+  std::string time = iso.substr(11, 5);
+  std::string offset = iso.substr(19, 6);
+
+  return day + "." + month + " " + time + " (" + "UTC " + offset + ")";
+}
+
+}  // namespace
+
+}  // namespace
+
+void RoutePrinter::PrintSegment(const Segment& segment, int index) {
   std::cout << "Сегмент №" << index << ":\n";
   std::cout << "Город отправления: " << segment.departure_city_title << '\n';
   std::cout << "Станция отправления: " << segment.departure_station_title
             << '\n';
-  std::cout << "Время отправления: " << segment.departure_time << '\n';
+  std::cout << "Время отправления: " << FormatDateTime(segment.departure_time)
+            << '\n';
 
   std::cout << "Город прибытия: " << segment.arrival_city_title << '\n';
   std::cout << "Станция прибытия: " << segment.arrival_station_title << '\n';
-  std::cout << "Время прибытия: " << segment.arrival_time << '\n';
+  std::cout << "Время прибытия: " << FormatDateTime(segment.arrival_time)
+            << '\n';
 
-  std::cout << "Тип транспорта: " << segment.transport_type << '\n';
+  std::cout << "Тип транспорта: " << transport_types.map[segment.transport_type]
+            << '\n';
+
   std::cout << "Перевозчик / маршрут: " << segment.carrier_title << '\n';
-  std::cout << "Длительность: " << segment.duration_seconds << " секунд\n";
+  std::cout << "Длительность: "
+            << SecondsToHoursMinutes(segment.duration_seconds) << '\n';
 }
 
-void PrintTransferInfo(const TransferInfo& transfer) {
+void RoutePrinter::PrintTransferInfo(const TransferInfo& transfer) {
   std::cout << "Пересадка:\n";
   std::cout << "Город пересадки: " << transfer.city_title << '\n';
   std::cout << "Станция пересадки (прибытие): "
             << transfer.transfer_from_station_title << '\n';
   std::cout << "Станция пересадки (отправление): "
             << transfer.transfer_to_station_title << '\n';
-  std::cout << "Длительность пересадки: " << transfer.duration_seconds
-            << " секунд\n";
+  std::cout << "Длительность пересадки: "
+            << SecondsToHoursMinutes(transfer.duration_seconds) << '\n';
 }
-
-}  // namespace
 
 void RoutePrinter::PrintRoutes(
     const std::optional<std::vector<Route>>& routes) {
@@ -119,8 +158,7 @@ RouteRequest CLIParser::ParseTokens(const std::vector<std::string>& tokens) {
       EnsureValueExists(i, tokens, arg);
       request.transport_type_ = tokens[++i];
     } else if (arg == "--transfers") {
-      EnsureValueExists(i, tokens, arg);
-      request.has_transfers_ = tokens[++i];
+      request.has_transfers_ = tokens[i];
     } else {
       throw std::runtime_error("Unknown argument: " + arg);
     }
