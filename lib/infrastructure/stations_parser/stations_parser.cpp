@@ -45,9 +45,13 @@ YandexCitiesDict::MakeCitiesDict() {
   std::ifstream file("cities_dict.json");
 
   if (IsCacheFresh(file)) {
-    file.seekg(0);
-    json clean_json = json::parse(file);
-    return JsonToUnorderedMapMaker{}.TurnJsonToMap(clean_json);
+    try {
+      file.seekg(0);
+      json clean_json = json::parse(file);
+      return JsonToUnorderedMapMaker{}.TurnJsonToMap(clean_json);
+    } catch (json::parse_error& e) {
+      std::cerr << "Parsing error : " << e.what() << '\n';
+    }
   };
 
   json raw_json = RawCitiesJsonRequester{}.RequestAPIJson();
@@ -62,6 +66,11 @@ json RawCitiesJsonRequester::RequestAPIJson() {
       cpr::Parameters{{"apikey", "e8083d0b-419e-4c46-b6b2-e5933f3bcc4d"},
                       {"format", "json"},
                       {"lang", "ru_RU"}});
+
+  if (cities_list.error.code != cpr::ErrorCode::OK) {
+    throw std::runtime_error("HTTP request failed : " +
+                             cities_list.error.message);
+  }
 
   if (cities_list.status_code != 200) {
     throw std::runtime_error("Failed to load cities list");
@@ -93,19 +102,32 @@ json CitiesDictMaker::BuildCitiesDict(const json& Cities_json) {
   clean_json["request_unix_time"] = seconds;
   clean_json["cities"] = json::object();
 
-  for (const auto& country : Cities_json["countries"]) {
-    for (const auto& region : country["regions"]) {
-      for (const auto& settlement : region["settlements"]) {
-        if (settlement["codes"].contains("yandex_code") &&
-            settlement["codes"]["yandex_code"].is_string()) {
-          std::string title = settlement["title"].get<std::string>();
-          std::string code =
-              settlement["codes"]["yandex_code"].get<std::string>();
+  try {
+    for (const auto& country : Cities_json["countries"]) {
+      if (!country.contains("regions")) {
+        continue;
+      }
 
-          clean_json["cities"][title] = code;
+      for (const auto& region : country["regions"]) {
+        if (!region.contains("settlements")) {
+          continue;
+        }
+
+        for (const auto& settlement : region["settlements"]) {
+          if (settlement["codes"].contains("yandex_code") &&
+              settlement["codes"]["yandex_code"].is_string()) {
+            std::string title = settlement["title"].get<std::string>();
+            std::string code =
+                settlement["codes"]["yandex_code"].get<std::string>();
+
+            clean_json["cities"][title] = code;
+          }
         }
       }
     }
+  } catch (std::exception& e) {
+    throw std::runtime_error(std::string("Failed to build dictionary") +
+                             e.what());
   }
   return clean_json;
 }
@@ -114,8 +136,16 @@ std::unordered_map<std::string, std::string>
 JsonToUnorderedMapMaker::TurnJsonToMap(const json& data) {
   std::unordered_map<std::string, std::string> map;
 
-  for (const auto& [key, value] : data["cities"].items()) {
-    map[key] = value.get<std::string>();
+  if (!data.contains("cities")) {
+    throw std::runtime_error("Json has no 'cities' object\n");
+  }
+
+  try {
+    for (const auto& [key, value] : data["cities"].items()) {
+      map[key] = value.get<std::string>();
+    }
+  } catch (std::exception& e) {
+    throw std::runtime_error("Failed to convert cities JSON to map\n");
   }
 
   return map;

@@ -91,7 +91,7 @@ void to_json(json& j, const CacheEntry& entry) {
 
 Cache::~Cache() {
   json j = cache_;
-  std::ofstream out(file_);
+  std::ofstream out(file_, std::ios::trunc);
 
   if (!out.is_open()) {
     return;
@@ -182,7 +182,7 @@ void Cache::DeleteOldRequests() {
     long long request_time = it->second.request_unix_time_;
 
     if (now - request_time > kOneHourInSeconds) {
-      cache_.erase(it);
+      it = cache_.erase(it);
     } else {
       it++;
     }
@@ -190,15 +190,15 @@ void Cache::DeleteOldRequests() {
 }
 
 void Cache::ControlMaxCacheSize() {
-  while(cache_.size() > cache_max_size) {
-    std::string oldest_key;
-    long long oldest_time = -1;
-    for(const auto& [key, value] : cache_) {
-      if(value.request_unix_time_ > oldest_time) {
-        oldest_time = value.request_unix_time_;
-        oldest_key = key;
+  while (cache_.size() > cache_max_size) {
+
+    auto oldest_it = cache_.begin();
+
+    for(auto it = cache_.begin(); it != cache_.end(); ++it) {
+      if(it->second.request_unix_time_ < oldest_it->second.request_unix_time_) {
+        oldest_it = it;
       }
     }
-    cache_.erase(oldest_key);
+    cache_.erase(oldest_it);
   }
 }

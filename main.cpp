@@ -44,6 +44,7 @@ int main(int argc, const char** argv) {
 
     try {
       RouteRequest request = parser.ReadInteractiveRequest();
+      
       std::optional<std::vector<Route>> routes =
           service.ProcessRequest(request);
 

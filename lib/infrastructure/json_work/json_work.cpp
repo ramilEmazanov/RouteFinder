@@ -73,27 +73,42 @@ Route APIJsonExtracter::ParseOneTransferRoute(const json& data,
 
 std::optional<std::vector<Route>> APIJsonExtracter::Extract(
     const json& data, const RouteRequest& request) {
-  int routes_count = data["pagination"]["total"].get<int>();
-  if (routes_count == 0) {
-    return std::nullopt;
-  }
+  try {
+    if (!data.contains("pagination") || !data["pagination"].contains("total")) {
+      throw std::runtime_error("Route JSON does not contain pagination.total");
+    }
 
-  std::vector<Route> response;
-  response.reserve(routes_count);
+    if (!data.contains("segments")) {
+      throw std::runtime_error("Route JSON does not contain valid segments");
+    }
 
-  for (const auto& segment : data["segments"]) {
-    if (segment["has_transfers"] == false) {
-      response.push_back(ParseDirectRoute(data, segment));
-    } else {
-      if (segment["transfers"].size() == 1) {
+    int routes_count = data["pagination"]["total"].get<int>();
+    if (routes_count == 0) {
+      return std::nullopt;
+    }
+
+    std::vector<Route> response;
+    response.reserve(routes_count);
+
+    for (const auto& segment : data["segments"]) {
+      if (!segment.contains("has_transfers")) {
+        continue;
+      }
+
+      if (segment["has_transfers"] == false) {
+        response.push_back(ParseDirectRoute(data, segment));
+      } else if (segment.contains("transfers") &&
+                 segment["transfers"].size() == 1) {
         response.push_back(ParseOneTransferRoute(data, segment));
       }
     }
-  }
 
-  if (response.empty()) {
-    return std::nullopt;
-  }
+    if (response.empty()) {
+      return std::nullopt;
+    }
 
-  return response;
+    return response;
+  } catch (std::exception& e) {
+    throw std::runtime_error(std::string("Failed to parse JSON roues") + e.what());
+  }
 }

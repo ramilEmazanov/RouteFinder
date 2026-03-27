@@ -25,12 +25,19 @@ bool MainService::RouteFilter(const Route& route, const RouteRequest& request) {
 }
 
 MainService::MainService(IRouteRepository& repo, ICitiesDict& cities)
-    : repo_(repo), cities_(cities) {
-  cities_dict = cities_.MakeCitiesDict();
-}
+    : repo_(repo), cities_(cities) {}
 
 std::optional<std::vector<Route>> MainService::ProcessRequest(
     const RouteRequest& request) {
+  std::unordered_map<std::string, std::string> cities_dict;
+
+  try {
+    cities_dict = cities_.MakeCitiesDict();
+  } catch (std::exception& e) {
+    throw std::runtime_error(std::string("Could not make cities dictionary") +
+                             e.what());
+  }
+
   if (!cities_dict.contains(request.arrival_city_) ||
       !cities_dict.contains(request.departure_city_)) {
     throw std::runtime_error("No requested cities found in database\n");
@@ -40,7 +47,12 @@ std::optional<std::vector<Route>> MainService::ProcessRequest(
   updated_request.departure_city_ = cities_dict[request.departure_city_];
   updated_request.arrival_city_ = cities_dict[request.arrival_city_];
 
-  std::optional<std::vector<Route>> response = repo_.GetRoute(updated_request);
+  std::optional<std::vector<Route>> response;
+  try {
+    response = repo_.GetRoute(updated_request);
+  } catch (const std::exception& e) {
+    throw std::runtime_error(std::string("Failed to get routes : ") + e.what());
+  }
 
   if (!response.has_value()) {
     return std::nullopt;
