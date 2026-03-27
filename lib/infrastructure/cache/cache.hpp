@@ -3,11 +3,11 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <json_work.hpp>
 #include <nlohmann/json.hpp>
 #include <structs.hpp>
 #include <unordered_map>
 #include <vector>
-#include <json_work.hpp>
 
 using json = nlohmann::json;
 
@@ -38,8 +38,23 @@ struct Cache {
 
   void ControlMaxCacheSize();
 
-  private:
+ private:
   int cache_max_size;
   std::string file_;
   std::unordered_map<std::string, CacheEntry> cache_;
 };
+
+void to_json(json& j, const TransferInfo& t);
+
+void to_json(json& j, const Segment& s);
+
+void to_json(json& j, const Route& r);
+
+void to_json(json& j, const CacheEntry& entry);
+
+void from_json(const json& j, TransferInfo& t);
+
+void from_json(const json& j, CacheEntry& entry);
+
+void from_json(const json& j,
+               std::unordered_map<std::string, CacheEntry>& cache);

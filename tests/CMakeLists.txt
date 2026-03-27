@@ -1,5 +1,10 @@
 add_executable(labwork7_tests
   stations_parser_test.cpp
+  cache_repository_test.cpp
+  cache_test.cpp
+  json_work_test.cpp
+  main_service_test.cpp
+  presentation_test.cpp
 )
 
 target_link_libraries(labwork7_tests PRIVATE

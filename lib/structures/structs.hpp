@@ -54,8 +54,3 @@ struct RouteRequest {
 
   std::string has_transfers_ = "false";
 };
-
-// struct AppPaths {
-//   std::filesystem::path cache_file;
-//   std::filesystem::path dictionary_file;
-// };

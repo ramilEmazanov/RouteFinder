@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
 
 #include <stations_parser.hpp>
+#include <filesystem>
 
-using json = nlohmann::json
+using json = nlohmann::json;
 
 namespace {
 
@@ -37,6 +38,54 @@ TEST(StationsParserTest, CleanJSONIntoUnorderedMap) {
 TEST(StationsParserTest, ThrowsWhenCitiesObjectMissing) {
   json invalid = {{"request_unix_time", 12345}};
   EXPECT_THROW(JsonToUnorderedMapMaker{}.TurnJsonToMap(invalid), std::runtime_error);
+}
+
+TEST(StationsParserTest, DictSkipWithoutRegions) {
+  json raw = {
+      {"countries", json::array({
+          {{"title", "Country1"}}
+      })}
+  };
+
+  auto clean = CitiesDictMaker{}.BuildCitiesDict(raw);
+
+  ASSERT_TRUE(clean.contains("cities"));
+  EXPECT_TRUE(clean["cities"].empty());
+}
+
+TEST(StationsParserTest, DictSkipsWithoutSettlements) {
+  json raw = {
+      {"countries", json::array({
+          {{"regions", json::array({
+              {{"title", "Region1"}}
+          })}}
+      })}
+  };
+
+  auto clean = CitiesDictMaker{}.BuildCitiesDict(raw);
+
+  ASSERT_TRUE(clean.contains("cities"));
+  EXPECT_TRUE(clean["cities"].empty());
+}
+
+TEST(StationsParserTest, WriteCleanCitiesDictWritesFile) {
+  std::string filename = "cities_dict.json";
+  std::filesystem::remove(filename);
+
+  json clean = {
+      {"request_unix_time", 12345},
+      {"cities", {{"Санкт-Петербург", "c2"}}}
+  };
+
+  ASSERT_NO_THROW(CleanJsonCitiesDictWriter{}.WriteCleanCitiesDict(clean));
+
+  std::ifstream in(filename);
+  ASSERT_TRUE(in.is_open());
+
+  json read_back = json::parse(in);
+  EXPECT_EQ(read_back["cities"]["Санкт-Петербург"], "c2");
+
+  std::filesystem::remove(filename);
 }
 
 }  // namespace
