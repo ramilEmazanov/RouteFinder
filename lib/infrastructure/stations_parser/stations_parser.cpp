@@ -42,7 +42,7 @@ bool IsCacheFresh(std::ifstream& file) {
 
 std::unordered_map<std::string, std::string>
 YandexCitiesDict::MakeCitiesDict() {
-  std::ifstream file("cities_dict.json");
+  std::ifstream file(PathHelper{}.DictPath().string());
 
   if (IsCacheFresh(file)) {
     try {
@@ -85,7 +85,7 @@ json RawCitiesJsonRequester::RequestAPIJson() {
 }
 
 void CleanJsonCitiesDictWriter::WriteCleanCitiesDict(const json& data) {
-  std::ofstream out("cities_dict.json");
+  std::ofstream out(PathHelper{}.DictPath().string());
   if (!out) {
     throw std::runtime_error("Failed to open cities_dict.json for writing");
   }

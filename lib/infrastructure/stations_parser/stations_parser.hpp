@@ -2,28 +2,33 @@
 
 #include <cpr/cpr.h>
 
-#include <nlohmann/json.hpp>
+#include <business_logic.hpp>
 #include <chrono>
 #include <iostream>
-#include <business_logic.hpp>
+#include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-struct YandexCitiesDict : ICitiesDict {
+class YandexCitiesDict : public ICitiesDict {
+ public:
   std::unordered_map<std::string, std::string> MakeCitiesDict();
 };
 
-struct RawCitiesJsonRequester {
+class RawCitiesJsonRequester {
+ public:
   json RequestAPIJson();
 };
 
-struct CleanJsonCitiesDictWriter {
+class CleanJsonCitiesDictWriter {
+ public:
   void WriteCleanCitiesDict(const json& data);
 };
 
-struct CitiesDictMaker {
+class CitiesDictMaker {
+ public:
   json BuildCitiesDict(const json& data);
 };
 
-struct JsonToUnorderedMapMaker {
+class JsonToUnorderedMapMaker {
+ public:
   std::unordered_map<std::string, std::string> TurnJsonToMap(const json& data);
 };

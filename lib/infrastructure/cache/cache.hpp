@@ -5,6 +5,7 @@
 #include <iostream>
 #include <json_work.hpp>
 #include <nlohmann/json.hpp>
+#include <filesystem>
 #include <structs.hpp>
 #include <unordered_map>
 #include <vector>
@@ -21,7 +22,7 @@ struct CacheEntry {
   CacheEntry() = default;
 };
 
-struct Cache {
+class Cache {
  public:
   static constexpr int kDefaultCacheSize = 10;
 
@@ -30,17 +31,15 @@ struct Cache {
   void WriteToCache(const RouteRequest& request,
                     const std::optional<std::vector<Route>>& route);
 
-  Cache(const std::string& file, int cache_size = kDefaultCacheSize);
+  Cache(const std::filesystem::path& file, int cache_size = kDefaultCacheSize);
 
   ~Cache();
 
-  void DeleteOldRequests();
-
-  void ControlMaxCacheSize();
-
  private:
-  int cache_max_size;
-  std::string file_;
+  void DeleteOldRequests();
+  void ControlMaxCacheSize();
+  int cache_max_size_;
+  std::filesystem::path file_;
   std::unordered_map<std::string, CacheEntry> cache_;
 };
 

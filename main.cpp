@@ -13,9 +13,14 @@
 using json = nlohmann::json;
 
 int main(int argc, const char** argv) {
+  if(argc == 1) {
+    std::cerr << "No API key provided\n";
+    return 1;
+  }
+  std::string api_key = argv[1];
   CLIParser parser;
-  YandexRepository yandex_repo{};
-  Cache cache("cache.json");
+  YandexRepository yandex_repo{api_key};
+  Cache cache(PathHelper{}.CachePath());
 
   CacheRepository cache_repo(yandex_repo, cache);
   YandexCitiesDict yandex_cities{};

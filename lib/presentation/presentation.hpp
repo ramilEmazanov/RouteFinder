@@ -8,7 +8,8 @@
 #include <unordered_set>
 #include <vector>
 
-struct CLIParser {
+class CLIParser {
+ public:
   RouteRequest ReadInteractiveRequest();
   void PrintHelp();
 
@@ -19,10 +20,12 @@ struct CLIParser {
   std::string AskTransfers();
 };
 
-struct RoutePrinter {
-  void PrintRoutes(const std::optional<std::vector<Route>>& routes);
+class RoutePrinter {
+ public:
+  void PrintRoutes(const std::optional<std::vector<Route>>& routes) const;
 
-  void PrintTransferInfo(const TransferInfo& transfer);
+ private:
+  void PrintTransferInfo(const TransferInfo& transfer) const;
 
-  void PrintSegment(const Segment& segment, int index);
+  void PrintSegment(const Segment& segment, int index) const;
 };

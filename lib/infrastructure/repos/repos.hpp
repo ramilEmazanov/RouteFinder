@@ -1,25 +1,30 @@
 #pragma once
 
-#include <fstream>
-#include <nlohmann/json.hpp>
 #include <cpr/cpr.h>
 
 #include <business_logic.hpp>
-#include <structs.hpp>
 #include <cache.hpp>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <structs.hpp>
 
-struct YandexRepository : IRouteRepository {
+class YandexRepository : public IRouteRepository {
  public:
-  std::optional<std::vector<Route>> GetRoute(const RouteRequest& request) override;
+  YandexRepository(const std::string& api_key);
+  std::optional<std::vector<Route>> GetRoute(
+      const RouteRequest& request) override;
+
  private:
+  std::string api_key_;
 };
 
-struct CacheRepository : IRouteRepository {
+class CacheRepository : public IRouteRepository {
  public:
   CacheRepository(IRouteRepository& yandex, Cache& cache)
       : api_repo_(yandex), cache_(cache) {}
 
-  std::optional<std::vector<Route>> GetRoute(const RouteRequest& request) override;
+  std::optional<std::vector<Route>> GetRoute(
+      const RouteRequest& request) override;
 
  private:
   Cache& cache_;

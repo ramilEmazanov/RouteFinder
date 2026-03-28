@@ -1,5 +1,7 @@
 #include "repos.hpp"
 
+YandexRepository::YandexRepository(const std::string& api_key) : api_key_(api_key) {}
+
 std::optional<std::vector<Route>> YandexRepository::GetRoute(
     const RouteRequest& request) {
   try {
@@ -7,7 +9,7 @@ std::optional<std::vector<Route>> YandexRepository::GetRoute(
 
     cpr::Response response = cpr::Get(
         cpr::Url{url},
-        cpr::Parameters{{"apikey", "e8083d0b-419e-4c46-b6b2-e5933f3bcc4d"},
+        cpr::Parameters{{"apikey", api_key_},
                         {"from", request.departure_city_},
                         {"to", request.arrival_city_},
                         {"format", "json"},

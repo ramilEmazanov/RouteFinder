@@ -155,8 +155,8 @@ void from_json(const json& j,
   }
 }
 
-Cache::Cache(const std::string& file, int cache_size)
-    : file_(file), cache_max_size(cache_size) {
+Cache::Cache(const std::filesystem::path& file, int cache_size)
+    : file_(file), cache_max_size_(cache_size) {
   std::ifstream in(file_);
 
   if (!in.is_open()) {
@@ -190,7 +190,7 @@ void Cache::DeleteOldRequests() {
 }
 
 void Cache::ControlMaxCacheSize() {
-  while (cache_.size() > cache_max_size) {
+  while (cache_.size() > cache_max_size_) {
 
     auto oldest_it = cache_.begin();
 

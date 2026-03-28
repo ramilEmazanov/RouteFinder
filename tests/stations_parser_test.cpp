@@ -68,8 +68,8 @@ TEST(StationsParserTest, DictSkipsWithoutSettlements) {
   EXPECT_TRUE(clean["cities"].empty());
 }
 
-TEST(StationsParserTest, WriteCleanCitiesDictWritesFile) {
-  std::string filename = "cities_dict.json";
+TEST(StationsParserTest, WriteCleanCitiesDict) {
+  std::filesystem::path filename = PathHelper{}.DictPath();
   std::filesystem::remove(filename);
 
   json clean = {

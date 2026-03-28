@@ -40,7 +40,6 @@ struct Route {
 };
 
 struct RouteRequest {
- public:
   RouteRequest() {}
   RouteRequest(const std::string& from, const std::string& to,
                const std::string& date);
@@ -53,4 +52,19 @@ struct RouteRequest {
   std::optional<std::string> transport_type_;
 
   std::string has_transfers_ = "false";
+};
+
+class PathHelper {
+  public:
+  std::filesystem::path RootPath() {
+    return std::filesystem::path(ROOT);
+  }
+
+  std::filesystem::path CachePath() {
+    return RootPath() / "cache.json";
+  }
+
+  std::filesystem::path DictPath() {
+    return RootPath() / "cities_dict.json";
+  }
 };

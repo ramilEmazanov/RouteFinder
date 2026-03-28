@@ -45,3 +45,5 @@ target_link_libraries(labwork7 PRIVATE
 )
 
 include(tests/coverage.cmake)
+
+target_compile_definitions(labwork7 PRIVATE ROOT="${CMAKE_SOURCE_DIR}")

@@ -10,3 +10,5 @@ PUBLIC
   FILES
     structs.hpp
 )
+
+target_compile_definitions(structures PUBLIC ROOT="${CMAKE_SOURCE_DIR}")

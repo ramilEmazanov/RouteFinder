@@ -56,7 +56,7 @@ std::string FormatDateTime(const std::string& iso) {
 
 }  // namespace
 
-void RoutePrinter::PrintSegment(const Segment& segment, int index) {
+void RoutePrinter::PrintSegment(const Segment& segment, int index) const {
   std::cout << "Сегмент №" << index << ":\n";
   std::cout << "Город отправления: " << segment.departure_city_title << '\n';
   std::cout << "Станция отправления: " << segment.departure_station_title
@@ -77,7 +77,7 @@ void RoutePrinter::PrintSegment(const Segment& segment, int index) {
             << SecondsToHoursMinutes(segment.duration_seconds) << '\n';
 }
 
-void RoutePrinter::PrintTransferInfo(const TransferInfo& transfer) {
+void RoutePrinter::PrintTransferInfo(const TransferInfo& transfer) const {
   std::cout << "Пересадка:\n";
   std::cout << "Город пересадки: " << transfer.city_title << '\n';
   std::cout << "Станция пересадки (прибытие): "
@@ -89,7 +89,7 @@ void RoutePrinter::PrintTransferInfo(const TransferInfo& transfer) {
 }
 
 void RoutePrinter::PrintRoutes(
-    const std::optional<std::vector<Route>>& routes) {
+    const std::optional<std::vector<Route>>& routes) const {
   if (!routes.has_value()) {
     std::cout << "No routes found\n";
     return;
