@@ -4,6 +4,8 @@
 #include <filesystem>
 
 #include <cache.hpp>
+#include <vector>
+#include <exception>
 #include <repos.hpp>
 
 using ::testing::_;

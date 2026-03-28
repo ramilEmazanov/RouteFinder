@@ -2,6 +2,9 @@
 
 #include <cache.hpp>
 #include <chrono>
+#include <nlohmann/json.hpp>
+#include <string>
+
 #include <filesystem>
 #include <fstream>
 
@@ -119,7 +122,7 @@ TEST_F(CacheTest, KeepingSizeConstant) {
 
   Cache cache(path_.string(), 2);
 
-  size_t found = 0;
+  int found = 0;
   for (int i = 0; i < 3; ++i) {
     RouteRequest req{"from" + std::to_string(i), "to" + std::to_string(i),
                      "2026-03-30"};

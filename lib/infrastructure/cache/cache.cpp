@@ -1,4 +1,11 @@
 #include "cache.hpp"
+#include <string>
+#include <optional>
+#include <vector>
+#include <chrono>
+#include <unordered_map>
+#include <filesystem>
+#include <exception>
 
 namespace {
 

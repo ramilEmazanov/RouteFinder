@@ -1,16 +1,12 @@
-#include <cpr/cpr.h>
-
 #include <business_logic.hpp>
 #include <cache.hpp>
-#include <fstream>
 #include <iostream>
-#include <nlohmann/json.hpp>
 #include <presentation.hpp>
 #include <repos.hpp>
+#include <string>
+#include <optional>
+#include <exception>
 #include <stations_parser.hpp>
-#include <vector>
-
-using json = nlohmann::json;
 
 int main(int argc, const char** argv) {
   if(argc == 1) {

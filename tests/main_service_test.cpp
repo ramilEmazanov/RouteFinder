@@ -1,6 +1,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <unordered_map>
+#include <string>
+#include <exception>
+#include <nlohmann/json.hpp>
+
 #include <business_logic.hpp>
 
 using ::testing::_;

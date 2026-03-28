@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <json_work.hpp>
+#include <exception>
 
 using json = nlohmann::json;
 

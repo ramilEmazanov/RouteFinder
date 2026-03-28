@@ -1,6 +1,10 @@
 #include "presentation.hpp"
 
 #include <iostream>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "structs.hpp"
 
@@ -100,7 +104,7 @@ void RoutePrinter::PrintRoutes(
     return;
   }
 
-  for (size_t i = 0; i < routes->size(); ++i) {
+  for (int i = 0; i < routes->size(); ++i) {
     const Route& route = (*routes)[i];
 
     std::cout << "Путь №" << i + 1 << ":\n";
@@ -116,7 +120,7 @@ void RoutePrinter::PrintRoutes(
 
     std::cout << '\n';
 
-    for (size_t j = 0; j < route.segments.size(); ++j) {
+    for (int j = 0; j < route.segments.size(); ++j) {
       PrintSegment(route.segments[j], static_cast<int>(j + 1));
       std::cout << '\n';
 

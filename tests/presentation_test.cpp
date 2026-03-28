@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 #include <presentation.hpp>
 #include <sstream>
+#include <iostream>
+#include <vector>
+#include <optional>
 
 namespace {
 

@@ -1,6 +1,15 @@
 #include "repos.hpp"
 
-YandexRepository::YandexRepository(const std::string& api_key) : api_key_(api_key) {}
+#include <cpr/cpr.h>
+
+#include <exception>
+#include <iostream>
+#include <optional>
+#include <string>
+#include <vector>
+
+YandexRepository::YandexRepository(const std::string& api_key)
+    : api_key_(api_key) {}
 
 std::optional<std::vector<Route>> YandexRepository::GetRoute(
     const RouteRequest& request) {
@@ -8,14 +17,13 @@ std::optional<std::vector<Route>> YandexRepository::GetRoute(
     std::string url = "https://api.rasp.yandex.net/v3.0/search/";
 
     cpr::Response response = cpr::Get(
-        cpr::Url{url},
-        cpr::Parameters{{"apikey", api_key_},
-                        {"from", request.departure_city_},
-                        {"to", request.arrival_city_},
-                        {"format", "json"},
-                        {"lang", "ru_RU"},
-                        {"transfers", request.has_transfers_},
-                        {"date", request.date_}});
+        cpr::Url{url}, cpr::Parameters{{"apikey", api_key_},
+                                       {"from", request.departure_city_},
+                                       {"to", request.arrival_city_},
+                                       {"format", "json"},
+                                       {"lang", "ru_RU"},
+                                       {"transfers", request.has_transfers_},
+                                       {"date", request.date_}});
 
     if (response.error.code != cpr::ErrorCode::OK) {
       throw std::runtime_error("HTTP request failed : " +
@@ -56,7 +64,7 @@ std::optional<std::vector<Route>> CacheRepository::GetRoute(
     cache_.WriteToCache(request, extracted_routes);
     return extracted_routes;
   } catch (const std::exception& e) {
-    std::cout << e.what() << '\n';
+    std::cerr << e.what() << '\n';
     return std::nullopt;
   }
 }
