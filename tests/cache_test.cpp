@@ -95,7 +95,7 @@ TEST_F(CacheTest, RemoveExpired) {
 
   std::ofstream(path_) << j.dump(2);
 
-  Cache cache(path_.string(), 10);
+  Cache cache(path_, 10);
 
   EXPECT_FALSE(cache.Extract(old_request).has_value());
 
