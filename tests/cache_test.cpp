@@ -37,11 +37,18 @@ Route MakeRoute(bool with_transfer = true) {
 }
 
 std::string MakeKey(const RouteRequest& request) {
-  return request.departure_city_ + "|" + request.arrival_city_ + "|" +
-         request.date_ + "|" +
-         (request.transport_type_.has_value() ? *request.transport_type_
-                                              : "null") +
-         "|" + request.has_transfers_;
+  std::string response;
+  response = request.departure_city_ + "|" + request.arrival_city_ + "|" +
+             request.date_ + "|";
+
+  if (request.transport_type_.has_value()) {
+    response += request.transport_type_.value() + "|";
+  } else {
+    response += "null|";
+  }
+
+  response += request.has_transfers_;
+  return response;
 }
 
 class CacheTest : public ::testing::Test {
@@ -82,34 +89,42 @@ TEST_F(CacheTest, MissingKey) {
 
 TEST_F(CacheTest, RemoveExpired) {
   using namespace std::chrono;
+
   const auto now =
       duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 
-  RouteRequest old_request{"old_from", "old_to", "2026-03-30"};
-  RouteRequest fresh_request{"fresh_from", "fresh_to", "2026-03-30"};
-  old_request.transport_type_ = "plane";
-  old_request.has_transfers_ = "true";
+  RouteRequest expired_request{"expired_from", "expired_to", "2026-03-30"};
+  expired_request.transport_type_ = "plane";
+  expired_request.has_transfers_ = "true";
 
-  fresh_request.transport_type_ = "plane";
-  fresh_request.has_transfers_ = "true";
+  RouteRequest valid_request{"valid_from", "valid_to", "2026-03-30"};
+  valid_request.transport_type_ = "plane";
+  valid_request.has_transfers_ = "true";
 
-  json j;
-  j[MakeKey(old_request)] = {{"request_unix_time", now - 7200},
-                             {"routes", std::vector<Route>{MakeRoute()}}};
-  j[MakeKey(fresh_request)] = {{"request_unix_time", now},
-                               {"routes", std::vector<Route>{MakeRoute()}}};
+  json j = {{MakeKey(expired_request),
+             {{"request_unix_time", now - 2 * 60 * 60},
+              {"routes", std::vector<Route>{MakeRoute()}}}},
+            {MakeKey(valid_request),
+             {{"request_unix_time", now},
+              {"routes", std::vector<Route>{MakeRoute()}}}}};
 
-  std::ofstream(path_) << j.dump(2);
+  {
+    std::ofstream out(path_);
+    ASSERT_TRUE(out.is_open());
+    out << j.dump(2);
+  }
 
   Cache cache(path_, 10);
 
-  EXPECT_FALSE(cache.Extract(old_request).has_value());
+  auto expired = cache.Extract(expired_request);
+  EXPECT_FALSE(expired.has_value());
 
-  auto fresh = cache.Extract(fresh_request);
-  ASSERT_TRUE(fresh.has_value());
-  ASSERT_EQ(fresh->front().segments.size(), 2);
-  EXPECT_EQ(fresh->front().segments.front().transport_type, "plane");
-  EXPECT_EQ(fresh->front().segments.back().transport_type, "plane");
+  auto valid = cache.Extract(valid_request);
+  ASSERT_TRUE(valid.has_value());
+  ASSERT_EQ(valid->size(), 1);
+  ASSERT_EQ(valid->front().segments.size(), 2);
+  EXPECT_EQ(valid->front().segments.front().transport_type, "plane");
+  EXPECT_TRUE(valid->front().transfer_info.has_value());
 }
 
 TEST_F(CacheTest, KeepingSizeConstant) {

@@ -1,8 +1,10 @@
 #include "stations_parser.hpp"
 
-#include <cpr/cpr.h>
+#include <cpr/api.h>
+#include <cpr/parameters.h>
 
 #include <chrono>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -10,7 +12,6 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
-#include <exception>
 
 using json = nlohmann::json;
 
