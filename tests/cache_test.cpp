@@ -122,7 +122,7 @@ TEST_F(CacheTest, KeepingSizeConstant) {
   }
   std::ofstream(path_) << j.dump(2);
 
-  Cache cache(path_.string(), 2);
+  Cache cache(path_, 2);
 
   int found = 0;
   for (int i = 0; i < 3; ++i) {
