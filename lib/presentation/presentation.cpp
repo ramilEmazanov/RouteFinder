@@ -1,22 +1,24 @@
 #include "presentation.hpp"
 
+#include <cctype>
 #include <iostream>
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "structs.hpp"
 
 namespace {
 
-std::unordered_map<std::string, std::string> kTransportNames{
+const std::unordered_map<std::string, std::string> kTransportNames{
     {"plane", "Самолет"},           {"train", "Поезд"},
     {"suburban", "Электричка"},     {"bus", "Автобус"},
     {"water", "Морской транспорт"}, {"helicopter", "Вертолет"}};
 
-std::unordered_set<std::string> kAllowed = {"train",    "plane", "bus",
-                                            "suburban", "water", "helicopter"};
+const std::unordered_set<std::string> kAllowed = {
+    "train", "plane", "bus", "suburban", "water", "helicopter"};
 
 bool IsValidDateFormat(const std::string& date) {
   if (date.size() != 10) {
@@ -73,7 +75,7 @@ void RoutePrinter::PrintSegment(const Segment& segment, int index) const {
   std::cout << "Время прибытия: " << FormatDateTime(segment.arrival_time)
             << '\n';
 
-  std::cout << "Тип транспорта: " << kTransportNames[segment.transport_type]
+  std::cout << "Тип транспорта: " << kTransportNames.at(segment.transport_type)
             << '\n';
 
   std::cout << "Перевозчик / маршрут: " << segment.carrier_title << '\n';

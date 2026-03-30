@@ -5,6 +5,7 @@
 #include <vector>
 #include <optional>
 #include <exception>
+#include <stdexcept>
 
 #include "structs.hpp"
 

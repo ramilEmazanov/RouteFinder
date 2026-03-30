@@ -1,6 +1,9 @@
 #include "json_work.hpp"
 #include <exception>
 #include <optional>
+#include <structs.hpp>
+#include <vector>
+#include <stdexcept>
 
 Route APIJsonExtracter::ParseDirectRoute(const json& data,
                                          const json& segment) {

@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <filesystem>
 #include <exception>
+#include <structs.hpp>
+#include <iostream>
 
 namespace {
 

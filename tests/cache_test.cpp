@@ -7,6 +7,8 @@
 
 #include <filesystem>
 #include <fstream>
+#include <structs.hpp>
+#include <vector>
 
 using json = nlohmann::json;
 

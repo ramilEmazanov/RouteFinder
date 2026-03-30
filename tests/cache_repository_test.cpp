@@ -1,12 +1,13 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <filesystem>
-
+#include <business_logic.hpp>
 #include <cache.hpp>
-#include <vector>
-#include <exception>
+#include <filesystem>
+#include <optional>
 #include <repos.hpp>
+#include <structs.hpp>
+#include <vector>
 
 using ::testing::_;
 using ::testing::Return;
@@ -29,10 +30,9 @@ Route MakeRoute(bool with_transfer = true) {
       Segment{"Уфа", "Уфа", "2026-03-30T19:35:00+05:00", "Москва", "Москва",
               "2026-03-30T20:00:00+03:00", "plane", "Аэрофлот", 8700});
 
-  route.segments.push_back(
-      Segment{"Москва", "Москва", "2026-03-30T22:30:00+03:00",
-              "Санкт-Петербург", "Санкт-Петербург",
-              "2026-03-30T23:55:00+03:00", "plane", "Россия", 5100});
+  route.segments.push_back(Segment{
+      "Москва", "Москва", "2026-03-30T22:30:00+03:00", "Санкт-Петербург",
+      "Санкт-Петербург", "2026-03-30T23:55:00+03:00", "plane", "Россия", 5100});
 
   if (with_transfer) {
     route.transfer_info =
@@ -45,8 +45,8 @@ Route MakeRoute(bool with_transfer = true) {
 class CacheRepositoryTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    path_ =
-        std::filesystem::temp_directory_path() / "labwork7_cache_repo_test.json";
+    path_ = std::filesystem::temp_directory_path() /
+            "labwork7_cache_repo_test.json";
     std::filesystem::remove(path_);
   }
 
@@ -58,7 +58,8 @@ class CacheRepositoryTest : public ::testing::Test {
 TEST_F(CacheRepositoryTest, NoApiCalling) {
   Cache cache(path_.string(), 10);
   RouteRequest request{"c172", "c2", "2026-03-30"};
-  auto routes = std::optional<std::vector<Route>>{std::vector<Route>{MakeRoute()}};
+  auto routes =
+      std::optional<std::vector<Route>>{std::vector<Route>{MakeRoute()}};
   cache.WriteToCache(request, routes);
 
   MockRouteRepository api;

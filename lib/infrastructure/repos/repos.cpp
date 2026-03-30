@@ -4,9 +4,13 @@
 
 #include <exception>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <vector>
+
+using json = nlohmann::json;
 
 YandexRepository::YandexRepository(const std::string& api_key)
     : api_key_(api_key) {}

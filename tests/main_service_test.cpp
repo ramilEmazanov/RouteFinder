@@ -1,12 +1,15 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <unordered_map>
-#include <string>
+#include <business_logic.hpp>
 #include <exception>
 #include <nlohmann/json.hpp>
-
-#include <business_logic.hpp>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <structs.hpp>
+#include <unordered_map>
+#include <vector>
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -117,7 +120,8 @@ TEST(MainServiceTest, RethrowsRepositoryErrorsWithContext) {
       .WillOnce(Return(std::unordered_map<std::string, std::string>{
           {"Уфа", "c172"}, {"Санкт-Петербург", "c2"}}));
 
-  EXPECT_CALL(repo, GetRoute(_)).WillOnce(Throw(std::runtime_error("exception")));
+  EXPECT_CALL(repo, GetRoute(_))
+      .WillOnce(Throw(std::runtime_error("exception")));
 
   try {
     service.ProcessRequest(request);

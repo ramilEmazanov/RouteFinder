@@ -7,6 +7,8 @@
 #include <optional>
 #include <exception>
 #include <stations_parser.hpp>
+#include <structs.hpp>
+#include <vector>
 
 int main(int argc, const char** argv) {
   if(argc == 1) {

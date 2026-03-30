@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
+
+#include <iostream>
+#include <optional>
 #include <presentation.hpp>
 #include <sstream>
-#include <iostream>
+#include <structs.hpp>
 #include <vector>
-#include <optional>
 
 namespace {
 
@@ -16,22 +18,20 @@ Route MakeRoute() {
       TransferInfo{"Москва", "Шереметьево", "Шереметьево", 9000};
 
   route.segments.push_back(
-      Segment{"Уфа", "Уфа", "2026-03-30T19:35:00+05:00",
-              "Москва", "Москва", "2026-03-30T20:00:00+03:00",
-              "plane", "Аэрофлот", 8700});
+      Segment{"Уфа", "Уфа", "2026-03-30T19:35:00+05:00", "Москва", "Москва",
+              "2026-03-30T20:00:00+03:00", "plane", "Аэрофлот", 8700});
 
-  route.segments.push_back(
-      Segment{"Москва", "Москва", "2026-03-30T22:30:00+03:00",
-              "Санкт-Петербург", "Санкт-Петербург",
-              "2026-03-30T23:55:00+03:00",
-              "plane", "Россия", 5100});
+  route.segments.push_back(Segment{
+      "Москва", "Москва", "2026-03-30T22:30:00+03:00", "Санкт-Петербург",
+      "Санкт-Петербург", "2026-03-30T23:55:00+03:00", "plane", "Россия", 5100});
 
   return route;
 }
 
 TEST(PresentationTest, ACoupleOfWrongInputs) {
   std::istringstream user_input(
-      "\nУфа\nСанкт-Петербург\n20260330\n2026-03-30\nplane\nlol\nkek\ncheburek\nyes\n");
+      "\nУфа\nСанкт-Петербург\n20260330\n2026-03-"
+      "30\nplane\nlol\nkek\ncheburek\nyes\n");
   std::ostringstream output;
 
   auto* default_in_buffer = std::cin.rdbuf(user_input.rdbuf());
