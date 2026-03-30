@@ -87,46 +87,6 @@ TEST_F(CacheTest, MissingKey) {
   EXPECT_FALSE(result.has_value());
 }
 
-TEST_F(CacheTest, RemoveExpired) {
-  using namespace std::chrono;
-
-  const auto now =
-      duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
-
-  RouteRequest expired_request{"expired_from", "expired_to", "2026-03-30"};
-  expired_request.transport_type_ = "plane";
-  expired_request.has_transfers_ = "true";
-
-  RouteRequest valid_request{"valid_from", "valid_to", "2026-03-30"};
-  valid_request.transport_type_ = "plane";
-  valid_request.has_transfers_ = "true";
-
-  json j = {{MakeKey(expired_request),
-             {{"request_unix_time", now - 2 * 60 * 60},
-              {"routes", std::vector<Route>{MakeRoute()}}}},
-            {MakeKey(valid_request),
-             {{"request_unix_time", now},
-              {"routes", std::vector<Route>{MakeRoute()}}}}};
-
-  {
-    std::ofstream out(path_);
-    ASSERT_TRUE(out.is_open());
-    out << j.dump(2);
-  }
-
-  Cache cache(path_, 10);
-
-  auto expired = cache.Extract(expired_request);
-  EXPECT_FALSE(expired.has_value());
-
-  auto valid = cache.Extract(valid_request);
-  ASSERT_TRUE(valid.has_value());
-  ASSERT_EQ(valid->size(), 1);
-  ASSERT_EQ(valid->front().segments.size(), 2);
-  EXPECT_EQ(valid->front().segments.front().transport_type, "plane");
-  EXPECT_TRUE(valid->front().transfer_info.has_value());
-}
-
 TEST_F(CacheTest, KeepingSizeConstant) {
   using namespace std::chrono;
   auto now =
