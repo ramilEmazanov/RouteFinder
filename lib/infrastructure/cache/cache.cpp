@@ -56,13 +56,13 @@ std::optional<std::vector<Route>> Cache::Extract(const RouteRequest& request) {
 void Cache::WriteToCache(const RouteRequest& request,
                          const std::optional<std::vector<Route>>& route) {
   DeleteOldRequests();
-  ControlMaxCacheSize();
   std::string key = MakeKey(request);
   auto epoch = std::chrono::system_clock::now().time_since_epoch();
   long long request_unix_time =
-      std::chrono::duration_cast<std::chrono::seconds>(epoch).count();
-
+  std::chrono::duration_cast<std::chrono::seconds>(epoch).count();
+  
   cache_[key] = CacheEntry(request_unix_time, route);
+  ControlMaxCacheSize();
 }
 
 void to_json(json& j, const TransferInfo& t) {
