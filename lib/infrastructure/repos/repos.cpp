@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <structs.hpp>
 
 using json = nlohmann::json;
 

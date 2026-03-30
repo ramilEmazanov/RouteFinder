@@ -6,8 +6,10 @@
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <exception>
 
 using json = nlohmann::json;
 

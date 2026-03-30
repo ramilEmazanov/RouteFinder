@@ -2,6 +2,7 @@
 #include <string>
 #include <optional>
 #include <vector>
+#include <fstream>
 #include <chrono>
 #include <unordered_map>
 #include <filesystem>

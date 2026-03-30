@@ -2,8 +2,6 @@
 #include <gtest/gtest.h>
 
 #include <business_logic.hpp>
-#include <exception>
-#include <nlohmann/json.hpp>
 #include <optional>
 #include <stdexcept>
 #include <string>

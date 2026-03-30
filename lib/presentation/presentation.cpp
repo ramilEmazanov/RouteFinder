@@ -12,12 +12,12 @@
 
 namespace {
 
-const std::unordered_map<std::string, std::string> kTransportNames{
+std::unordered_map<std::string, std::string> transport_names{
     {"plane", "Самолет"},           {"train", "Поезд"},
     {"suburban", "Электричка"},     {"bus", "Автобус"},
     {"water", "Морской транспорт"}, {"helicopter", "Вертолет"}};
 
-const std::unordered_set<std::string> kAllowed = {
+std::unordered_set<std::string> allowed = {
     "train", "plane", "bus", "suburban", "water", "helicopter"};
 
 bool IsValidDateFormat(const std::string& date) {
@@ -75,7 +75,7 @@ void RoutePrinter::PrintSegment(const Segment& segment, int index) const {
   std::cout << "Время прибытия: " << FormatDateTime(segment.arrival_time)
             << '\n';
 
-  std::cout << "Тип транспорта: " << kTransportNames.at(segment.transport_type)
+  std::cout << "Тип транспорта: " << transport_names[segment.transport_type]
             << '\n';
 
   std::cout << "Перевозчик / маршрут: " << segment.carrier_title << '\n';
@@ -177,7 +177,7 @@ std::optional<std::string> CLIParser::AskTransport() {
       return std::nullopt;
     }
 
-    if (kAllowed.contains(input)) {
+    if (allowed.contains(input)) {
       return input;
     }
 

@@ -8,6 +8,7 @@
 #include <repos.hpp>
 #include <structs.hpp>
 #include <vector>
+#include <stdexcept>
 
 using ::testing::_;
 using ::testing::Return;
