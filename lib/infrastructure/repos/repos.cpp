@@ -1,10 +1,12 @@
 #include "repos.hpp"
 
 #include <cpr/cpr.h>
+#include <cpr/api.h>
+#include <cpr/parameters.h>
 
 #include <exception>
 #include <iostream>
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <optional>
 #include <stdexcept>
 #include <string>

@@ -2,11 +2,11 @@
 
 #include <cache.hpp>
 #include <chrono>
-#include <nlohmann/json.hpp>
-#include <string>
-
 #include <filesystem>
 #include <fstream>
+#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
+#include <string>
 #include <structs.hpp>
 #include <vector>
 
@@ -57,7 +57,7 @@ class CacheTest : public ::testing::Test {
 };
 
 TEST_F(CacheTest, WriteAndExtract) {
-  Cache cache(path_.string(), 10);
+  Cache cache(path_, 10);
   RouteRequest request{"c172", "c2", "2026-03-30"};
   request.transport_type_ = "plane";
   request.has_transfers_ = "true";
@@ -73,7 +73,7 @@ TEST_F(CacheTest, WriteAndExtract) {
 }
 
 TEST_F(CacheTest, MissingKey) {
-  Cache cache(path_.string(), 10);
+  Cache cache(path_, 10);
   RouteRequest request{"c172", "c2", "2026-03-30"};
 
   auto result = cache.Extract(request);
@@ -87,13 +87,17 @@ TEST_F(CacheTest, RemoveExpired) {
 
   RouteRequest old_request{"old_from", "old_to", "2026-03-30"};
   RouteRequest fresh_request{"fresh_from", "fresh_to", "2026-03-30"};
+  old_request.transport_type_ = "plane";
+  old_request.has_transfers_ = "true";
+
+  fresh_request.transport_type_ = "plane";
+  fresh_request.has_transfers_ = "true";
 
   json j;
   j[MakeKey(old_request)] = {{"request_unix_time", now - 7200},
-                             {"routes", std::vector<Route>{MakeRoute("old")}}};
-  j[MakeKey(fresh_request)] = {
-      {"request_unix_time", now},
-      {"routes", std::vector<Route>{MakeRoute("fresh")}}};
+                             {"routes", std::vector<Route>{MakeRoute()}}};
+  j[MakeKey(fresh_request)] = {{"request_unix_time", now},
+                               {"routes", std::vector<Route>{MakeRoute()}}};
 
   std::ofstream(path_) << j.dump(2);
 

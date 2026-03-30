@@ -5,7 +5,8 @@
 #include <business_logic.hpp>
 #include <chrono>
 #include <iostream>
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
+
 using json = nlohmann::json;
 
 class YandexCitiesDict : public ICitiesDict {

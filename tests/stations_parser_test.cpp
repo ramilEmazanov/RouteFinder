@@ -3,6 +3,7 @@
 #include <stations_parser.hpp>
 #include <filesystem>
 #include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <fstream>
 #include <stdexcept>
 
