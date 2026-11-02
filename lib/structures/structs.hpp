@@ -1,0 +1,70 @@
+
+#pragma once
+
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+struct TransferInfo {
+  std::string city_title;
+  std::string transfer_from_station_title;
+  std::string transfer_to_station_title;
+  int duration_seconds = 0;
+};
+
+struct Segment {
+  std::string departure_city_title;
+  std::string departure_station_title;
+  std::string departure_time;
+
+  std::string arrival_city_title;
+  std::string arrival_station_title;
+  std::string arrival_time;
+
+  std::string transport_type;
+  std::string carrier_title;
+  int duration_seconds = 0;
+};
+
+struct Route {
+  std::string departure_city_title;
+  std::string arrival_city_title;
+
+  std::string date_;
+
+  std::vector<Segment> segments;
+  std::optional<TransferInfo> transfer_info;
+};
+
+struct RouteRequest {
+  RouteRequest() {}
+  RouteRequest(const std::string& from, const std::string& to,
+               const std::string& date);
+
+  std::string departure_city_;
+  std::string arrival_city_;
+
+  std::string date_;
+
+  std::optional<std::string> transport_type_;
+
+  std::string has_transfers_ = "false";
+};
+
+class PathHelper {
+  public:
+  std::filesystem::path RootPath() {
+    return std::filesystem::path(ROOT);
+  }
+
+  std::filesystem::path CachePath() {
+    return RootPath() / "cache.json";
+  }
+
+  std::filesystem::path DictPath() {
+    return RootPath() / "cities_dict.json";
+  }
+};
