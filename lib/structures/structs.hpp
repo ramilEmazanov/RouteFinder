@@ -37,6 +37,8 @@ struct Route {
 
   std::vector<Segment> segments;
   std::optional<TransferInfo> transfer_info;
+
+  long long DurationSeconds() const;
 };
 
 struct RouteRequest {
@@ -52,6 +54,9 @@ struct RouteRequest {
   std::optional<std::string> transport_type_;
 
   std::string has_transfers_ = "false";
+
+  std::optional<long long> max_duration_seconds_;
+  bool sort_by_duration_ = false;
 };
 
 class PathHelper {

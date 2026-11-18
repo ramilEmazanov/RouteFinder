@@ -1,7 +1,9 @@
 #include "presentation.hpp"
 
 #include <cctype>
+#include <charconv>
 #include <iostream>
+#include <limits>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -30,9 +32,9 @@ bool IsValidDateFormat(const std::string& date) {
          std::isdigit(date[8]) && std::isdigit(date[9]);
 }
 
-std::string SecondsToHoursMinutes(int seconds) {
-  int hours = seconds / 3600;
-  int minutes = (seconds % 3600) / 60;
+std::string SecondsToHoursMinutes(long long seconds) {
+  long long hours = seconds / 3600;
+  long long minutes = (seconds % 3600) / 60;
 
   std::string result;
 
@@ -113,6 +115,8 @@ void RoutePrinter::PrintRoutes(
     std::cout << "Город отправления: " << route.departure_city_title << '\n';
     std::cout << "Город прибытия: " << route.arrival_city_title << '\n';
     std::cout << "Дата: " << route.date_ << '\n';
+    std::cout << "Общее время в пути: "
+              << SecondsToHoursMinutes(route.DurationSeconds()) << '\n';
 
     if (!route.transfer_info.has_value()) {
       std::cout << "Без пересадок\n";
@@ -202,6 +206,44 @@ std::string CLIParser::AskTransfers() {
   }
 }
 
+std::optional<long long> CLIParser::AskMaxDuration() {
+  while (true) {
+    std::cout << "Максимальное время в пути в минутах (Enter — без ограничения): ";
+    std::string input;
+    if (!std::getline(std::cin, input)) {
+      throw std::runtime_error("Ввод прерван.");
+    }
+    if (input.empty()) {
+      return std::nullopt;
+    }
+    long long minutes = 0;
+    const auto [end, error] =
+        std::from_chars(input.data(), input.data() + input.size(), minutes);
+    if (error == std::errc{} && end == input.data() + input.size() &&
+        minutes > 0 && minutes <= std::numeric_limits<long long>::max() / 60) {
+      return minutes * 60;
+    }
+    std::cout << "Введите положительное целое число минут.\n";
+  }
+}
+
+bool CLIParser::AskSortByDuration() {
+  while (true) {
+    std::cout << "Сначала самые быстрые маршруты? (yes/no, Enter — no): ";
+    std::string input;
+    if (!std::getline(std::cin, input)) {
+      throw std::runtime_error("Ввод прерван.");
+    }
+    if (input == "yes") {
+      return true;
+    }
+    if (input.empty() || input == "no") {
+      return false;
+    }
+    std::cout << "Введите yes или no.\n";
+  }
+}
+
 RouteRequest CLIParser::ReadInteractiveRequest() {
   RouteRequest request;
   request.departure_city_ = AskNonEmptyString("Введите город отправления: ");
@@ -209,11 +251,15 @@ RouteRequest CLIParser::ReadInteractiveRequest() {
   request.date_ = AskDate();
   request.transport_type_ = AskTransport();
   request.has_transfers_ = AskTransfers();
+  request.max_duration_seconds_ = AskMaxDuration();
+  request.sort_by_duration_ = AskSortByDuration();
   return request;
 }
 
 void CLIParser::PrintHelp() {
   std::cout
       << "Программа ищет маршруты между городами через API Яндекс Расписаний.\n"
-         "В интерактивном режиме поля вводятся по отдельности.\n";
+         "В интерактивном режиме поля вводятся по отдельности.\n"
+         "Можно ограничить время в пути в минутах и отсортировать маршруты "
+         "по длительности с учётом ожидания пересадки.\n";
 }
