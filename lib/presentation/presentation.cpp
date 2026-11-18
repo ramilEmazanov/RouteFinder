@@ -106,6 +106,8 @@ void RoutePrinter::PrintRoutes(
     return;
   }
 
+  std::cout << "Найдено маршрутов: " << routes->size() << '\n';
+
   for (int i = 0; i < routes->size(); ++i) {
     const Route& route = (*routes)[i];
 

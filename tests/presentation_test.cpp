@@ -79,4 +79,17 @@ TEST(PresentationTest, PrintRoutesPrintsNoRoutesForNullopt) {
   EXPECT_NE(output.str().find("No routes found"), std::string::npos);
 }
 
+TEST(PresentationTest, PrintRoutesPrintsTotalBeforeResults) {
+  std::ostringstream output;
+  auto* default_out_buffer = std::cout.rdbuf(output.rdbuf());
+
+  RoutePrinter printer;
+  printer.PrintRoutes(std::vector<Route>{MakeRoute(), MakeRoute()});
+
+  std::cout.rdbuf(default_out_buffer);
+
+  EXPECT_EQ(output.str().find("Найдено маршрутов: 2\n"), 0);
+  EXPECT_NE(output.str().find("Путь №2"), std::string::npos);
+}
+
 }  // namespace
