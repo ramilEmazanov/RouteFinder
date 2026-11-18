@@ -1,5 +1,6 @@
 #include "business_logic.hpp"
 
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -10,6 +11,11 @@
 #include "structs.hpp"
 
 bool MainService::RouteFilter(const Route& route, const RouteRequest& request) {
+  if (request.max_duration_seconds_ &&
+      route.DurationSeconds() > *request.max_duration_seconds_) {
+    return false;
+  }
+
   if (request.has_transfers_ == "false" && route.transfer_info.has_value()) {
     return false;
   }
@@ -30,6 +36,10 @@ MainService::MainService(IRouteRepository& repo, ICitiesDict& cities)
 
 std::optional<std::vector<Route>> MainService::ProcessRequest(
     const RouteRequest& request) {
+  if (request.max_duration_seconds_ && *request.max_duration_seconds_ <= 0) {
+    throw std::invalid_argument("Maximum route duration must be positive");
+  }
+
   std::unordered_map<std::string, std::string> cities_dict;
 
   try {
@@ -66,6 +76,13 @@ std::optional<std::vector<Route>> MainService::ProcessRequest(
     if (RouteFilter(route, request)) {
       filtered_results.push_back(route);
     }
+  }
+
+  if (request.sort_by_duration_) {
+    std::stable_sort(filtered_results.begin(), filtered_results.end(),
+                     [](const Route& lhs, const Route& rhs) {
+                       return lhs.DurationSeconds() < rhs.DurationSeconds();
+                     });
   }
 
   return filtered_results;

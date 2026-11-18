@@ -18,6 +18,8 @@ class CLIParser {
   std::string AskDate();
   std::optional<std::string> AskTransport();
   std::string AskTransfers();
+  std::optional<long long> AskMaxDuration();
+  bool AskSortByDuration();
 };
 
 class RoutePrinter {
