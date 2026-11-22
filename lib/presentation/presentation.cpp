@@ -144,7 +144,9 @@ std::string CLIParser::AskNonEmptyString(const std::string& request) {
   while (true) {
     std::cout << request;
     std::string input;
-    std::getline(std::cin, input);
+    if (!std::getline(std::cin, input)) {
+      throw std::runtime_error("Ввод прерван.");
+    }
 
     if (!input.empty()) {
       return input;

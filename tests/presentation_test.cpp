@@ -1,10 +1,14 @@
 #include <gtest/gtest.h>
 
+#include <cstdlib>
 #include <iostream>
 #include <optional>
 #include <presentation.hpp>
 #include <sstream>
+#include <streambuf>
+#include <string>
 #include <structs.hpp>
+#include <unistd.h>
 #include <vector>
 
 namespace {
@@ -98,6 +102,32 @@ TEST(PresentationTest, ThrowsWhenDurationInputEnds) {
   std::cin.rdbuf(original_in);
   std::cin.clear();
   std::cout.rdbuf(original_out);
+}
+
+TEST(PresentationTest, ThrowsWhenDepartureCityInputEnds) {
+  class NullBuffer : public std::streambuf {
+    int overflow(int character) override {
+      return traits_type::not_eof(character);
+    }
+  };
+
+  ASSERT_EXIT(
+      {
+        std::istringstream input;
+        NullBuffer output;
+        std::cin.rdbuf(input.rdbuf());
+        std::cin.clear();
+        std::cout.rdbuf(&output);
+        alarm(1);
+
+        try {
+          CLIParser{}.ReadInteractiveRequest();
+        } catch (const std::runtime_error& error) {
+          std::exit(std::string(error.what()) == "Ввод прерван." ? 0 : 2);
+        }
+        std::exit(3);
+      },
+      ::testing::ExitedWithCode(0), "");
 }
 
 TEST(PresentationTest, PrintRoutesPrintsNoRoutesForNullopt) {
