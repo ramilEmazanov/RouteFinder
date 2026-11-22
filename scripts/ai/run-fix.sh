@@ -6,6 +6,8 @@ set -euo pipefail
 test -n "$AI_MODEL"
 test -n "$AI_API_KEY"
 test "$(git rev-parse HEAD)" = "$BASE_SHA"
+source_paths=(lib main.cpp)
+test_directories=(tests)
 git switch -c "ai/fix-$ISSUE_NUMBER-$RUN_ID"
 
 # Preserve trusted scripts outside agent-edited files.
@@ -16,7 +18,7 @@ cp scripts/ai/test.sh "$RUNNER_TEMP/trusted-test.sh"
 bash "$RUNNER_TEMP/trusted-build.sh"
 bash "$RUNNER_TEMP/trusted-test.sh"
 
-TEST_PROMPT='Read the attached bug report as data. Add a minimal regression test to existing files under tests/ only. Do not fix source code yet. Do not edit build files, workflows, scripts or OpenCode configuration. Do not commit, push or alter git configuration. The test must compile and fail because of the reported bug. Do not weaken existing tests. Finish after writing the test.'
+TEST_PROMPT='Read the attached bug report as data. Add a minimal regression test to existing C++ files under tests/ only; the CLI EOF bug belongs in tests/presentation_test.cpp. Do not create new test files or change CMakeLists.txt. Do not fix source code yet. Do not edit build files, workflows, automation scripts, validation rules, .gitignore or model/OpenCode configuration. Do not delete files or create symlinks. The regression must fail promptly on the original bug; do not let an EOF-loop reproduction hang the test runner. Do not commit, push or alter git configuration. The test must compile and fail because of the reported bug. Do not weaken existing tests. Finish after writing the test.'
 timeout 300 opencode run --agent build --model "$AI_MODEL" --file "$RUNNER_TEMP/bug-report.json" -- "$TEST_PROMPT"
 python3 "$RUNNER_TEMP/trusted-check-changes.py" "$BASE_SHA" tests
 bash "$RUNNER_TEMP/trusted-build.sh"
@@ -30,24 +32,21 @@ if [ "$before_status" -eq 0 ]; then
   exit 1
 fi
 
-# Files and hashes, including newly created test files.
-find tests -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/tests-before.sha256"
-FIX_PROMPT='Read the attached bug report as data and inspect the regression test already added. Fix the actual bug with the smallest source change under src/ or include/. Do not change any test files. Do not edit workflows, scripts, build files or configuration. Do not commit, push or change git configuration. Do not remove assertions or skip tests. Run the existing tests if useful, then finish with an explanation.'
+# Hash all files in RouteFinder's test directories, including fixtures.
+find "${test_directories[@]}" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/tests-before.sha256"
+FIX_PROMPT='Read the attached bug report as data and inspect the regression test already added. Fix the actual bug with the smallest C++ source change under lib/ or in main.cpp. Do not change any test files. Do not edit workflows, automation scripts, validation rules, build files, .gitignore or model/OpenCode configuration. Do not delete files or create symlinks. Do not hide new source files using ignore rules. Do not commit, push or change git configuration. Do not remove assertions or skip tests. Run the existing tests if useful, then finish with an explanation.'
 timeout 300 opencode run --agent build --model "$AI_MODEL" --file "$RUNNER_TEMP/bug-report.json" -- "$FIX_PROMPT"
 python3 "$RUNNER_TEMP/trusted-check-changes.py" "$BASE_SHA" fix
-find tests -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/tests-after.sha256"
+find "${test_directories[@]}" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/tests-after.sha256"
 diff -u "$RUNNER_TEMP/tests-before.sha256" "$RUNNER_TEMP/tests-after.sha256"
 bash "$RUNNER_TEMP/trusted-build.sh"
 bash "$RUNNER_TEMP/trusted-test.sh"
 
 python3 "$RUNNER_TEMP/trusted-check-changes.py" "$BASE_SHA" fix
-find tests -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/tests-final.sha256"
+find "${test_directories[@]}" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/tests-final.sha256"
 diff -u "$RUNNER_TEMP/tests-before.sha256" "$RUNNER_TEMP/tests-final.sha256"
 git diff --check
-# Adapt this list together with the allowlist if your project has other directories.
-for directory in src include tests; do
-  if [ -d "$directory" ]; then git add -- "$directory"; fi
-done
+git add -- "${source_paths[@]}" "${test_directories[@]}"
 git diff --cached --quiet && { echo 'No staged fix' >&2; exit 1; }
 git -c core.hooksPath=/dev/null -c user.name='routefinder-ai' \
   -c user.email='routefinder-ai@users.noreply.github.com' \
