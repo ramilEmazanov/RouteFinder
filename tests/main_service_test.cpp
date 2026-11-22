@@ -131,4 +131,109 @@ TEST(MainServiceTest, RethrowsRepositoryErrorsWithContext) {
   }
 }
 
+
+class RouteDurationTest : public ::testing::Test {
+ protected:
+  MockRouteRepository repo;
+  MockCitiesDict cities;
+  MainService service{repo, cities};
+  RouteRequest request{"Уфа", "Санкт-Петербург", "2026-03-30"};
+
+  void SetUp() override {
+    request.has_transfers_ = "true";
+    ON_CALL(cities, MakeCitiesDict())
+        .WillByDefault(Return(std::unordered_map<std::string, std::string>{
+            {"Уфа", "c172"}, {"Санкт-Петербург", "c2"}}));
+  }
+
+  void ReturnRoutes(const std::vector<Route>& routes) {
+    EXPECT_CALL(repo, GetRoute(_)).WillOnce(Return(routes));
+  }
+};
+
+TEST_F(RouteDurationTest, IncludesAllSegmentsAndTransferWaitingTime) {
+  EXPECT_EQ(MakeRoute(true).DurationSeconds(), 22800);
+  EXPECT_EQ(MakeRoute(false).DurationSeconds(), 13800);
+  EXPECT_EQ(Route{}.DurationSeconds(), 0);
+}
+
+TEST_F(RouteDurationTest, FiltersAtInclusiveDurationBoundary) {
+  request.max_duration_seconds_ = 13800;
+  ReturnRoutes({MakeRoute(true), MakeRoute(false)});
+  auto result = service.ProcessRequest(request);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->size(), 1);
+  EXPECT_EQ(result->front().DurationSeconds(), 13800);
+}
+
+TEST_F(RouteDurationTest, ReturnsEmptyWhenEveryRouteExceedsLimit) {
+  request.max_duration_seconds_ = 1;
+  ReturnRoutes({MakeRoute(true), MakeRoute(false)});
+  auto result = service.ProcessRequest(request);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_TRUE(result->empty());
+}
+
+TEST_F(RouteDurationTest, SortsByTotalDurationAndPreservesTies) {
+  auto first = MakeRoute(false);
+  first.departure_city_title = "first";
+  auto second = first;
+  second.departure_city_title = "second";
+  request.sort_by_duration_ = true;
+  ReturnRoutes({MakeRoute(true), first, second});
+  auto result = service.ProcessRequest(request);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->size(), 3);
+  EXPECT_EQ((*result)[0].departure_city_title, "first");
+  EXPECT_EQ((*result)[1].departure_city_title, "second");
+  EXPECT_EQ((*result)[2].DurationSeconds(), 22800);
+}
+
+TEST_F(RouteDurationTest, KeepsRepositoryOrderByDefault) {
+  ReturnRoutes({MakeRoute(true), MakeRoute(false)});
+  auto result = service.ProcessRequest(request);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->size(), 2);
+  EXPECT_EQ(result->front().DurationSeconds(), 22800);
+}
+
+TEST_F(RouteDurationTest, CombinesDurationAndTransportFilters) {
+  auto train = MakeRoute(false);
+  for (auto& segment : train.segments) {
+    segment.transport_type = "train";
+  }
+  request.max_duration_seconds_ = 20000;
+  request.transport_type_ = "plane";
+  request.sort_by_duration_ = true;
+  ReturnRoutes({MakeRoute(true), train, MakeRoute(false)});
+  auto result = service.ProcessRequest(request);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->size(), 1);
+  EXPECT_EQ(result->front().segments.front().transport_type, "plane");
+}
+
+TEST_F(RouteDurationTest, PreservesMissingRepositoryResult) {
+  request.sort_by_duration_ = true;
+  EXPECT_CALL(repo, GetRoute(_)).WillOnce(Return(std::nullopt));
+  EXPECT_FALSE(service.ProcessRequest(request).has_value());
+}
+
+TEST_F(RouteDurationTest, RejectsNonPositiveLimitsBeforeRepositoryAccess) {
+  EXPECT_CALL(cities, MakeCitiesDict()).Times(0);
+  EXPECT_CALL(repo, GetRoute(_)).Times(0);
+  for (long long limit : {0LL, -1LL}) {
+    request.max_duration_seconds_ = limit;
+    EXPECT_THROW(service.ProcessRequest(request), std::invalid_argument);
+  }
+}
+
+TEST_F(RouteDurationTest, SumsDurationsBeyondIntegerRange) {
+  Route route;
+  Segment segment;
+  segment.duration_seconds = 2000000000;
+  route.segments = {segment, segment};
+  route.transfer_info = TransferInfo{"", "", "", 2000000000};
+  EXPECT_EQ(route.DurationSeconds(), 6000000000LL);
+}
+
 }  // namespace
